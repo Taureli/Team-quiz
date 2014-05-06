@@ -11,10 +11,18 @@ var users = require('./routes/users');
 
 var app = express();
 
+//moje zmienne
+var rooms = ["Room0", "Room1"];
+
 //socket.io
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
-server.listen(3000);
+server.listen(3000, function () {
+    console.log('Serwer działa na porcie 3000');
+});
+
+//Roomdata (do zmiennych dla pokoi)
+var roomdata = require('roomdata');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -29,6 +37,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
+
+//Dodatkowe ścieżki:
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'bower_components/jquery/dist')));
+app.use(express.static(path.join(__dirname, 'bower_components/bootstrap/dist/css')));
+app.use(express.static(path.join(__dirname, 'bower_components/bootstrap/dist/fonts')));
+app.use(express.static(path.join(__dirname, 'bower_components/bootstrap/dist/js')));
 
 app.use(less({
 	src: path.join(__dirname, 'less'),
@@ -69,5 +84,27 @@ app.use(function(err, req, res, next) {
 });
 
 
+//--------------GŁÓWNY-KOD-------------
+
+io.sockets.on('connection', function (socket) {
+
+	//Wyświetlanie istniejących pokoi po podłączeniu:
+	io.sockets.emit('showRooms', rooms);
+	
+	socket.on('create room', function(data){
+		rooms.push(data);
+		io.sockets.emit('showRooms', rooms);
+	});
+	
+	socket.on('join room', function(data){
+		socket.room = data;
+		socket.join(data);
+		
+		var temp = " * Użytkownik " + socket.username + " dołączył do pokoju " + socket.room;
+		console.log("SENT %s", temp);
+	});
+	
+	
+});
 
 module.exports = app;

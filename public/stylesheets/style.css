@@ -6,3 +6,11 @@ body {
 a {
   color: #00B7FF;
 }
+
+.mybtn {
+    width: 268px;
+	height: 150px;
+	margin-top: 2px;
+	margin-left: 1px;
+	margin-right: 1px;
+}

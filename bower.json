@@ -1,6 +1,6 @@
 {
   "name": "projekt",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "moduleType": [
     "node"
   ],
@@ -8,9 +8,10 @@
     "Jakub Karolczak"
   ],
   "dependencies": {
-	"jquery": "~1.10.2"
+	"jquery": "2.1.x",
+	"bootstrap": "~3.1.1"
   },
-  "license": "MIT",
+  "license": "GPL",
   "private": true,
   "ignore": [
     "**/.*",
