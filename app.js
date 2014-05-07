@@ -24,6 +24,14 @@ server.listen(3000, function () {
 //Roomdata (do zmiennych dla pokoi)
 var roomdata = require('roomdata');
 
+//Kompilacja less na css:
+app.use(less({
+	src: (path.join(__dirname, 'less')),
+	dest: (path.join(__dirname, 'public/stylesheets')),
+	prefix: '/stylesheets',
+	compress: true
+}));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -44,13 +52,6 @@ app.use(express.static(path.join(__dirname, 'bower_components/jquery/dist')));
 app.use(express.static(path.join(__dirname, 'bower_components/bootstrap/dist/css')));
 app.use(express.static(path.join(__dirname, 'bower_components/bootstrap/dist/fonts')));
 app.use(express.static(path.join(__dirname, 'bower_components/bootstrap/dist/js')));
-
-app.use(less({
-	src: path.join(__dirname, 'less'),
-	dest: path.join(__dirname, 'public/stylesheets'),
-	prefix: '/stylesheets',
-	compress: true
-}));
 
 /// catch 404 and forwarding to error handler
 app.use(function(req, res, next) {
@@ -102,6 +103,17 @@ io.sockets.on('connection', function (socket) {
 		
 		var temp = " * Użytkownik " + socket.username + " dołączył do pokoju " + socket.room;
 		console.log("SENT %s", temp);
+		io.sockets.in(socket.room).emit('joined', socket.name, temp);
+	});
+	
+	socket.on('leave room', function(){
+		temp = socket.room;
+		socket.leave(temp);
+		socket.room = "";
+		
+		var temp = " * Użytkownik " + socket.username + " wyszedł z pokoju " + temp;
+		console.log("SENT %s", temp);
+		io.sockets.in(socket.room).emit('left', temp);
 	});
 	
 	

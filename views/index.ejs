@@ -34,8 +34,8 @@
 			
 			<!-- WYPISUJE POKOJE: -->
 			<div class="row col-md-8 col-md-offset-2" id="listRooms">
-				<button type="button" class="btn btn-primary btn-lg mybtn"><b>Testowy pokój</b><br/>5 graczy<br/>czas gry: 2:50<br/><h5>wymaga hasła</h5></button>
-				<button type="button" class="btn btn-primary btn-lg mybtn"><b>Testowy pokój numer2</b><br/>8 graczy<br/>czas gry: 4:52<br/><h5></h5></button>
+			<!--	<button type="button" class="btn btn-primary btn-lg mybtn"><b>Testowy pokój</b><br/>5 graczy<br/>czas gry: 2:50<br/><h5>wymaga hasła</h5></button>
+				<button type="button" class="btn btn-primary btn-lg mybtn"><b>Testowy pokój numer2</b><br/>8 graczy<br/>czas gry: 4:52<br/><h5></h5></button> -->
 			</div>
 			
 		</div>
@@ -44,28 +44,53 @@
 		<!--      GRA     -->
 		<div id="game">
 		
-			<div id="timer">
+			<div class="col-md-12">
+				<div class="col-md-2">
+					<button id="wyjdz" type="button" class="btn btn-primary">Opuść pokój</button>
+				</div>
+			
+				<div id="timer" class="col-md-2 col-md-offset-3 well well-sm text-center">
+						5:20
+				</div>
 			</div>
 			
-			<div id="points">
+			<div id="points" class="col-md-2 col-md-offset-5 text-center">
+				<span class="bluePoints">
+					20
+				</span>
+				-
+				<span class="redPoints">
+					31
+				</span>
 			</div>
 			
-			<div id="blueTeam">
+			<div class="col-md-12">
+				<div id="blueTeam" class="col-md-3">
+				</div>
+				
+				<div class="col-md-6">
+					<div id="quiz">
+						<div id="question">Pytanie testowe</div>
+						<button id="answer" class="btn btn-primary btn-lg ansbtn">Odpowiedź</button>
+						<button id="answer" class="btn btn-primary btn-lg ansbtn">Odpowiedź</button>
+						<button id="answer" class="btn btn-primary btn-lg ansbtn">Odpowiedź</button>
+						<button id="answer" class="btn btn-primary btn-lg ansbtn">Odpowiedź</button>
+					</div>
+					
+					<div id="chatLog">
+					</div>
+					
+					<br/>
+					
+					<form action="" id="messageForm">
+					  <input type="text" id="message" maxlength="20">
+					  <button id="send">Wyślij wiadomość</button>
+					</form>
+				</div>
+				
+				<div id="redTeam" class="col-md-3">
+				</div>
 			</div>
-			
-			<div id="redTeam">
-			</div>
-			
-			<div id="question">
-			</div>
-			
-			<div id="chat">
-			</div>
-			
-			<form action="" id="messageForm">
-			  <input type="text" id="message" maxlength="20">
-			  <button id="send">Wyślij wiadomość</button>
-			</form>
 			
 		</div>
 	
