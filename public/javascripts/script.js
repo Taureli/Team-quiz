@@ -9,6 +9,7 @@ $(function(){
 	var $listRooms = $('#listRooms');
 	var $wyjdz = $('#wyjdz');
 	var $blueTeam = $('#blueTeam');
+	var $redTeam = $('#redTeam');
 	var $chatLog = $('#chatLog');
 
 
@@ -60,6 +61,7 @@ $(function(){
 		socket.emit('join room', this.name);
 		$game.show();
 		$rooms.hide();
+		$chatLog.html('');	//Czyszczę chat z wcześniejszych informacji
 	
 	});
 	
@@ -72,13 +74,20 @@ $(function(){
 		});
 	});
 	
-	//Po dołączeniu do pokoju dodaje usera do listy i daje informację w czacie
-	socket.on('joined', function (nazwa, info) {
-		$blueTeam.append(nazwa + '<br/>');	//TYMCZASOWO
-        $chatLog.append(info + '<br/>');
-    });
+	//Po dołączeniu lub wyjściu z pokoju wypisuje userów do listy i daje informację w czacie
+	socket.on('joined left', function (blueTeam, redTeam, info) {
 	
-	socket.on('left', function (info) {
+		$blueTeam.html("");
+		$redTeam.html("");
+	
+		$.each(blueTeam, function(i, el){
+			$blueTeam.prepend(el + '<br/>');
+		});
+		
+		$.each(redTeam, function(i, el){
+			$redTeam.prepend(el + '<br/>');
+		});
+		
         $chatLog.append(info + '<br/>');
     });
 	

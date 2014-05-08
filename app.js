@@ -12,7 +12,15 @@ var users = require('./routes/users');
 var app = express();
 
 //moje zmienne
-var rooms = ["Room0", "Room1"];
+var rooms = ["Room0", "Room1"];	//Tu będą zapisywane wszystkie istniejące pokoje
+var redTeam = {};		//Do przechowywania informacji kto jest w jakiej
+var blueTeam = {};		//drużynie w danym pokoju
+//Tworzę tablice dla defaultowych pokoi:
+redTeam[0] = [];
+blueTeam[0] = [];
+redTeam[1] = [];
+blueTeam[1] = [];
+
 
 //socket.io
 var server = require('http').createServer(app);
@@ -93,27 +101,56 @@ io.sockets.on('connection', function (socket) {
 	io.sockets.emit('showRooms', rooms);
 	
 	socket.on('create room', function(data){
-		rooms.push(data);
+		temp = rooms.push(data);	//temp przechowuje ilosc elementow w tablicy rooms
+		redTeam[temp - 1] = [];
+		blueTeam[temp - 1] = [];
 		io.sockets.emit('showRooms', rooms);
 	});
 	
 	socket.on('join room', function(data){
+	
+		socket.username = "nazwa usera"; //TYMCZASOWO
+	
 		socket.room = data;
 		socket.join(data);
 		
+		//Dopisuję użytkownika do drużyny, gdzie jest mniej osób
+		if(blueTeam[socket.room].length > redTeam[socket.room].length)
+			redTeam[socket.room].push(socket.username);
+		else
+			blueTeam[socket.room].push(socket.username);
+		
 		var temp = " * Użytkownik " + socket.username + " dołączył do pokoju " + socket.room;
 		console.log("SENT %s", temp);
-		io.sockets.in(socket.room).emit('joined', socket.name, temp);
+		io.sockets.in(socket.room).emit('joined left', blueTeam[socket.room], redTeam[socket.room], temp);
 	});
 	
 	socket.on('leave room', function(){
-		temp = socket.room;
-		socket.leave(temp);
+		tempRoom = socket.room;
+		socket.leave(tempRoom);
 		socket.room = "";
 		
-		var temp = " * Użytkownik " + socket.username + " wyszedł z pokoju " + temp;
+		//usuwam użytkownika z zespołu:
+		for(var i = 0; i < blueTeam[tempRoom].length; i++){
+			if(blueTeam[tempRoom][i] == socket.username){
+				temp1 = blueTeam[tempRoom].slice(0,i);
+				temp2 = blueTeam[tempRoom].slice(i + 1,blueTeam[tempRoom].length);
+				temp3 = temp1.concat(temp2);
+				blueTeam[tempRoom] = temp3;
+			}
+		}
+		for(var i = 0; i < redTeam[tempRoom].length; i++){
+			if(redTeam[tempRoom][i] == socket.username){
+				temp1 = redTeam[tempRoom].slice(0,i);
+				temp2 = redTeam[tempRoom].slice(i + 1,redTeam[tempRoom].length);
+				temp3 = temp1.concat(temp2);
+				redTeam[tempRoom] = temp3;
+			}
+		}
+		
+		var temp = " * Użytkownik " + socket.username + " wyszedł z pokoju " + tempRoom;
 		console.log("SENT %s", temp);
-		io.sockets.in(socket.room).emit('left', temp);
+		io.sockets.in(socket.room).emit('joined left', blueTeam[tempRoom], redTeam[tempRoom], temp);
 	});
 	
 	
