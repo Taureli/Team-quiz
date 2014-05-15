@@ -99,6 +99,12 @@ io.sockets.on('connection', function (socket) {
 
 	//Wyświetlanie istniejących pokoi po podłączeniu:
 	io.sockets.emit('showRooms', rooms);
+
+	socket.on('set name', function(data){
+
+		socket.username = data;
+
+	});
 	
 	socket.on('create room', function(data){
 		temp = rooms.push(data);	//temp przechowuje ilosc elementow w tablicy rooms
@@ -108,8 +114,6 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('join room', function(data){
-	
-		socket.username = "nazwa usera"; //TYMCZASOWO
 	
 		socket.room = data;
 		socket.join(data);
@@ -124,13 +128,19 @@ io.sockets.on('connection', function (socket) {
 		console.log("SENT %s", temp);
 		io.sockets.in(socket.room).emit('joined left', blueTeam[socket.room], redTeam[socket.room], temp);
 	});
+
+	socket.on('send msg', function (data) {
+		data = socket.username + ': ' + data;
+		console.log("SENT " + JSON.stringify(data));
+		io.sockets.in(socket.room).emit('rec msg', data);
+	});
 	
 	socket.on('leave room', function(){
 		tempRoom = socket.room;
 		socket.leave(tempRoom);
 		socket.room = "";
 		
-		//usuwam użytkownika z zespołu:
+		//usuwam użytkownika z zespołu: 	TYMCZASOWE
 		for(var i = 0; i < blueTeam[tempRoom].length; i++){
 			if(blueTeam[tempRoom][i] == socket.username){
 				temp1 = blueTeam[tempRoom].slice(0,i);

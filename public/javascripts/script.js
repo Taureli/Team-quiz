@@ -11,6 +11,10 @@ $(function(){
 	var $blueTeam = $('#blueTeam');
 	var $redTeam = $('#redTeam');
 	var $chatLog = $('#chatLog');
+	var $set = $('#set');
+	var $newName = $('#newName');
+	var $send = $('#send');
+	var $message = $('#message');
 
 
 	//--------ZAMIANA TAGÓW---------
@@ -52,6 +56,27 @@ $(function(){
 		$rooms.show();
 	
 	});
+
+	$set.click(function(e){
+
+		e.preventDefault();
+
+		if($newName.val().length > 0)
+			socket.emit('set name', $newName.val());
+
+	});
+
+	$send.click(function(e){
+	
+		e.preventDefault();	//deaktywacja "defaultowego" dzialania buttona
+		
+		if($message.val().length > 0){
+			console.log($message.val());
+			socket.emit('send msg', safe_tags_replace($message.val()));
+			$message.val('');	//czyszcze inputa
+		}
+	
+	});
 	
 	//Przyciski-pokoje są tworzone dynamicznie, dlatego metoda przypisania "klika" jest nieco inna:
 	$(document).on('click', '#roomBtn', function(e){
@@ -73,6 +98,11 @@ $(function(){
 			$listRooms.append("<button type='button' class='btn btn-primary btn-lg mybtn' id='roomBtn' name='" + i + "'><b>" + el + "</b></button>");
 		});
 	});
+
+	//Aktualizacja chatu
+	socket.on('rec msg', function (data) {
+        $chatLog.append(data + '<br/>');
+    });
 	
 	//Po dołączeniu lub wyjściu z pokoju wypisuje userów do listy i daje informację w czacie
 	socket.on('joined left', function (blueTeam, redTeam, info) {
