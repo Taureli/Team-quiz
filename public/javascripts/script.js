@@ -11,8 +11,6 @@ $(function(){
 	var $blueTeam = $('#blueTeam');
 	var $redTeam = $('#redTeam');
 	var $chatLog = $('#chatLog');
-	var $set = $('#set');
-	var $newName = $('#newName');
 	var $send = $('#send');
 	var $message = $('#message');
 
@@ -57,15 +55,6 @@ $(function(){
 	
 	});
 
-	$set.click(function(e){
-
-		e.preventDefault();
-
-		if($newName.val().length > 0)
-			socket.emit('set name', $newName.val());
-
-	});
-
 	$send.click(function(e){
 	
 		e.preventDefault();	//deaktywacja "defaultowego" dzialania buttona
@@ -97,6 +86,13 @@ $(function(){
 		$.each(data, function(i, el){
 			$listRooms.append("<button type='button' class='btn btn-primary btn-lg mybtn' id='roomBtn' name='" + i + "'><b>" + el + "</b></button>");
 		});
+	});
+
+	//Ustawianie nazwy użytkownika
+	socket.on('choose name', function(data){
+		var name = prompt("Podaj swoją nazwę:");
+
+		socket.emit('check name', name);
 	});
 
 	//Aktualizacja chatu

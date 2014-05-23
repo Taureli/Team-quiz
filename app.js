@@ -13,6 +13,7 @@ var app = express();
 
 //moje zmienne
 var rooms = ["Room0", "Room1"];	//Tu będą zapisywane wszystkie istniejące pokoje
+var usernames = [];		//Do zapisywania nazw wszystkich użytkowników
 var redTeam = {};		//Do przechowywania informacji kto jest w jakiej
 var blueTeam = {};		//drużynie w danym pokoju
 //Tworzę tablice dla defaultowych pokoi:
@@ -99,11 +100,23 @@ io.sockets.on('connection', function (socket) {
 
 	//Wyświetlanie istniejących pokoi po podłączeniu:
 	io.sockets.emit('showRooms', rooms);
+	socket.emit('choose name');
 
-	socket.on('set name', function(data){
+	//Ustawianie nazwy
+	socket.on('check name', function(data){
+		if(data == null || data.length < 2){
+			socket.emit('choose name');	//Nazwa nie może być pusta
+		} else {
+			//sprawdzam, czy już jest taka nazwa
+			for (var i = 0; i < usernames.length; i++){
+				if(usernames[i] == data){
+					socket.emit('choose name');
+				}
+			}
 
-		socket.username = data;
-
+			socket.username = data;
+			usernames.push(data);
+		}
 	});
 	
 	socket.on('create room', function(data){
@@ -119,10 +132,13 @@ io.sockets.on('connection', function (socket) {
 		socket.join(data);
 		
 		//Dopisuję użytkownika do drużyny, gdzie jest mniej osób
-		if(blueTeam[socket.room].length > redTeam[socket.room].length)
+		if(blueTeam[socket.room].length > redTeam[socket.room].length){
 			redTeam[socket.room].push(socket.username);
-		else
+			socket.team = "red";
+		} else {
 			blueTeam[socket.room].push(socket.username);
+			socket.team = "blue";
+		}
 		
 		var temp = " * Użytkownik " + socket.username + " dołączył do pokoju " + socket.room;
 		console.log("SENT %s", temp);
@@ -137,24 +153,29 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('leave room', function(){
 		tempRoom = socket.room;
+		tempTeam = socket.team;
 		socket.leave(tempRoom);
 		socket.room = "";
+		socket.team = "";
 		
-		//usuwam użytkownika z zespołu: 	TYMCZASOWE
-		for(var i = 0; i < blueTeam[tempRoom].length; i++){
-			if(blueTeam[tempRoom][i] == socket.username){
-				temp1 = blueTeam[tempRoom].slice(0,i);
-				temp2 = blueTeam[tempRoom].slice(i + 1,blueTeam[tempRoom].length);
-				temp3 = temp1.concat(temp2);
-				blueTeam[tempRoom] = temp3;
+		//usuwam użytkownika z zespołu:
+		if(tempTeam == "blue"){
+			for(var i = 0; i < blueTeam[tempRoom].length; i++){
+				if(blueTeam[tempRoom][i] == socket.username){
+					temp1 = blueTeam[tempRoom].slice(0,i);
+					temp2 = blueTeam[tempRoom].slice(i + 1,blueTeam[tempRoom].length);
+					temp3 = temp1.concat(temp2);
+					blueTeam[tempRoom] = temp3;
+				}
 			}
-		}
-		for(var i = 0; i < redTeam[tempRoom].length; i++){
-			if(redTeam[tempRoom][i] == socket.username){
-				temp1 = redTeam[tempRoom].slice(0,i);
-				temp2 = redTeam[tempRoom].slice(i + 1,redTeam[tempRoom].length);
-				temp3 = temp1.concat(temp2);
-				redTeam[tempRoom] = temp3;
+		} else {
+			for(var i = 0; i < redTeam[tempRoom].length; i++){
+				if(redTeam[tempRoom][i] == socket.username){
+					temp1 = redTeam[tempRoom].slice(0,i);
+					temp2 = redTeam[tempRoom].slice(i + 1,redTeam[tempRoom].length);
+					temp3 = temp1.concat(temp2);
+					redTeam[tempRoom] = temp3;
+				}
 			}
 		}
 		
