@@ -148,22 +148,20 @@ io.sockets.on('connection', function (socket) {
 			socket.team = "blue";
 		}
 
-		client.get("hello", function(err, reply){
-			console.log("TEST %s", reply);
-			socket.emit('show question', reply);
-		});
-
-		//Pobieram pytanie z bazy i wyświetlam 	TEST
+		//Pobieram pytanie z bazy i wyświetlam pytanie
 		client.get("questions", function(err, reply){
 
-			allQuestions = JSON.parse(reply);
+			var allQuestions = JSON.parse(reply);
 
-			//var question = allQuestions[Math.random()];
-			//pytanie = allQuestions[1];
+			pytanie = allQuestions.questions[0].question;
+			ansa = allQuestions.questions[0].a;
+			ansb = allQuestions.questions[0].b;
+			ansc = allQuestions.questions[0].c;
+			ansd = allQuestions.questions[0].d;
 
-			console.log("TEST %s", allQuestions);
+			console.log("PYTANIE %s", JSON.stringify(pytanie));
 
-			//socket.emit('show question', pytanie);
+			socket.emit('show question', pytanie, ansa, ansb, ansc, ansd);
 
 		});		
 		

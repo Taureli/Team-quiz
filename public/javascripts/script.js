@@ -14,6 +14,10 @@ $(function(){
 	var $send = $('#send');
 	var $message = $('#message');
 	var $question = $('#question');
+	var $ansa = $('#ansa');
+	var $ansb = $('#ansb');
+	var $ansc = $('#ansc');
+	var $ansd = $('#ansd');
 
 
 	//--------ZAMIANA TAGÓW---------
@@ -67,6 +71,22 @@ $(function(){
 		}
 	
 	});
+
+	$ansa.click(function(e){
+		e.preventDefault();
+	});
+
+	$ansb.click(function(e){
+		e.preventDefault();
+	});
+
+	$ansc.click(function(e){
+		e.preventDefault();
+	});
+
+	$ansd.click(function(e){
+		e.preventDefault();
+	});
 	
 	//Przyciski-pokoje są tworzone dynamicznie, dlatego metoda przypisania "klika" jest nieco inna:
 	$(document).on('click', '#roomBtn', function(e){
@@ -118,8 +138,12 @@ $(function(){
         $chatLog.append(info + '<br/>');
     });
 
-    socket.on('show question', function (data){
-    	$question.html(data);
+    socket.on('show question', function (question, ansa, ansb, ansc, ansd){
+    	$question.html(question);
+    	$ansa.html(ansa);
+    	$ansb.html(ansb);
+    	$ansc.html(ansc);
+    	$ansd.html(ansd);
     });
 	
 	
