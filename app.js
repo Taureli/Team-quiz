@@ -33,6 +33,14 @@ server.listen(3000, function () {
 //Roomdata (do zmiennych dla pokoi)
 var roomdata = require('roomdata');
 
+//REDIS
+var redis = require('redis'),
+    client = redis.createClient();
+
+client.on('error', function (err) {
+    console.log('Error ' + err);
+});
+
 //Kompilacja less na css:
 app.use(less({
 	src: (path.join(__dirname, 'less')),
@@ -139,6 +147,25 @@ io.sockets.on('connection', function (socket) {
 			blueTeam[socket.room].push(socket.username);
 			socket.team = "blue";
 		}
+
+		client.get("hello", function(err, reply){
+			console.log("TEST %s", reply);
+			socket.emit('show question', reply);
+		});
+
+		//Pobieram pytanie z bazy i wyświetlam 	TEST
+		client.get("questions", function(err, reply){
+
+			allQuestions = JSON.parse(reply);
+
+			//var question = allQuestions[Math.random()];
+			//pytanie = allQuestions[1];
+
+			console.log("TEST %s", allQuestions);
+
+			//socket.emit('show question', pytanie);
+
+		});		
 		
 		var temp = " * Użytkownik " + socket.username + " dołączył do pokoju " + socket.room;
 		console.log("SENT %s", temp);

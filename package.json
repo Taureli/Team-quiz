@@ -17,7 +17,8 @@
     "grunt-contrib-jshint": "~0.6.3",
     "grunt-contrib-nodeunit": "~0.2.0",
     "grunt-contrib-uglify": "~0.2.2",
-	"less-middleware": "0.1.x"
+	  "less-middleware": "0.1.x",
+    "redis": "0.10.3"
   },
   "devDependencies": {
     "grunt": "^0.4.4"

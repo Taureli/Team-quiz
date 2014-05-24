@@ -13,6 +13,7 @@ $(function(){
 	var $chatLog = $('#chatLog');
 	var $send = $('#send');
 	var $message = $('#message');
+	var $question = $('#question');
 
 
 	//--------ZAMIANA TAGÓW---------
@@ -115,6 +116,10 @@ $(function(){
 		});
 		
         $chatLog.append(info + '<br/>');
+    });
+
+    socket.on('show question', function (data){
+    	$question.html(data);
     });
 	
 	
