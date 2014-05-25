@@ -110,54 +110,6 @@ app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 
 //-------------Autoryzacja-----------
-app.get('/login', function(req, res){
-	res.render('login.ejs');
-});
-
-app.get('/', isAuthenticated, function(req, res){
-	res.render('index.ejs');
-	console.log(req.user.username);
-});
-
-function isAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  res.redirect('/login')
-}
-
-app.post('/login',
-    passport.authenticate('local', {
-        failureRedirect: '/login'
-    }),
-    function (req, res) {
-        res.redirect('/');
-    }
-);
-
-//REJESTRACJA
-app.post('/register', function (req, res){
-
-	if(req.body.password === req.body.password2){
-
-		login = req.body.username;
-		password = req.body.password;
-
-		client.hmset(login, "password", password, function(err, reply){
-	    	if(err){
-	    		console.log(err);
-	    	} else {
-	    		console.log("Zarejestrowano użytkownika: " + login);
-	    		//logowanie po rejestracji:
-	    		passport.authenticate('local')(req, res, function(){
-	    			return res.redirect('/');
-	    		});
-	    	}
-	    });
-	} else {
-		res.redirect('/login');
-	}
-
-});
-
 var onAuthorizeSuccess = function (data, accept) {
     console.log('Udane połączenie z socket.io');
     accept(null, true);
