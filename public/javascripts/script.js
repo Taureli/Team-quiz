@@ -101,11 +101,11 @@ $(function(){
 	});
 	
 	//Wypisywanie wszystkich dostępnych pokoi
-	socket.on('showRooms', function(data){
+	socket.on('showRooms', function(data, usersInRoom){
 		$listRooms.html("");
 		
 		$.each(data, function(i, el){
-			$listRooms.append("<button type='button' class='btn btn-primary btn-lg mybtn' id='roomBtn' name='" + i + "'><b>" + el + "</b></button>");
+			$listRooms.append("<button type='button' class='btn btn-primary btn-lg mybtn' id='roomBtn' name='" + i + "'><b>" + el + "</b><p>Graczy: " + usersInRoom[i] +" </p></button>");
 		});
 	});
 

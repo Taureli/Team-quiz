@@ -1,4 +1,5 @@
 var express = require('express');
+var session = require('express-session');
 var path = require('path');
 var favicon = require('static-favicon');
 var logger = require('morgan');
@@ -13,6 +14,7 @@ var app = express();
 
 //moje zmienne
 var rooms = ["Room0", "Room1"];	//Tu będą zapisywane wszystkie istniejące pokoje
+var usersInRoom = [0, 0];		//Przechowuje liczbe graczy w danym pokoju
 var usernames = [];		//Do zapisywania nazw wszystkich użytkowników
 var redTeam = {};		//Do przechowywania informacji kto jest w jakiej
 var blueTeam = {};		//drużynie w danym pokoju
@@ -33,6 +35,15 @@ server.listen(3000, function () {
 //Roomdata (do zmiennych dla pokoi)
 var roomdata = require('roomdata');
 
+//Passport
+var connect = require('connect');
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+var passportSocketIo = require('passport.socketio');
+var sessionStore = new connect.session.MemoryStore();
+var sessionSecret = 'itsasecret';
+var sessionKey = 'connect.sid';
+
 //REDIS
 var redis = require('redis'),
     client = redis.createClient();
@@ -40,6 +51,42 @@ var redis = require('redis'),
 client.on('error', function (err) {
     console.log('Error ' + err);
 });
+
+//MD5
+var md5 = require('MD5');
+
+//--------------------Konfiguracja passport.js-------------------
+passport.serializeUser(function (user, done) {
+    done(null, user);
+});
+
+passport.deserializeUser(function (obj, done) {
+    done(null, obj);
+});
+
+passport.use(new LocalStrategy(
+    function (username, password, done) {
+        if ((username === 'admin') && (password === 'tajne')) {
+            console.log("Udane logowanie...");
+            return done(null, {
+                username: username,
+                password: password
+            });
+        } else {
+            return done(null, false);
+        }
+    }
+));
+
+app.use(cookieParser());
+app.use(session({
+    store: sessionStore,
+    key: sessionKey,
+    secret: sessionSecret
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+//---------------------------------------------------------------
 
 //Kompilacja less na css:
 app.use(less({
@@ -58,12 +105,61 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+
+//-------------Autoryzacja-----------
+app.get('/login', function(req, res){
+	res.render('login.ejs');
+});
+
+app.get('/', isAuthenticated, function(req, res){
+	res.render('index.ejs');
+	console.log(req.user.username);
+});
+
+function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login')
+}
+
+app.post('/login',
+    passport.authenticate('local', {
+        failureRedirect: '/login'
+    }),
+    function (req, res) {
+        res.redirect('/');
+    }
+);
+
+var onAuthorizeSuccess = function (data, accept) {
+    console.log('Udane połączenie z socket.io');
+    accept(null, true);
+};
+
+var onAuthorizeFail = function (data, message, error, accept) {
+    if (error) {
+        throw new Error(message);
+    }
+    console.log('Nieudane połączenie z socket.io:', message);
+    accept(null, false);
+};
+
+io.set('authorization', passportSocketIo.authorize({
+    passport: passport,
+    cookieParser: cookieParser,
+    key: sessionKey, // nazwa ciasteczka, w którym express/connect przechowuje identyfikator sesji
+    secret: sessionSecret,
+    store: sessionStore,
+    success: onAuthorizeSuccess,
+    fail: onAuthorizeFail
+}));
+
+//-------------------------------------- 
 
 app.use('/', routes);
 app.use('/users', users);
 
 //Dodatkowe ścieżki:
+app.use(express.static(path.join(__dirname, 'views')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'bower_components/jquery/dist')));
 app.use(express.static(path.join(__dirname, 'bower_components/bootstrap/dist/css')));
@@ -101,14 +197,15 @@ app.use(function(err, req, res, next) {
     });
 });
 
-
 //--------------GŁÓWNY-KOD-------------
 
 io.sockets.on('connection', function (socket) {
 
+	socket.username = socket.handshake.user.username;
+
 	//Wyświetlanie istniejących pokoi po podłączeniu:
-	io.sockets.emit('showRooms', rooms);
-	socket.emit('choose name');
+	socket.emit('showRooms', rooms, usersInRoom);
+	//socket.emit('choose name');
 
 	//Ustawianie nazwy
 	socket.on('check name', function(data){
@@ -128,16 +225,22 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('create room', function(data){
+		usersInRoom.push(0);
 		temp = rooms.push(data);	//temp przechowuje ilosc elementow w tablicy rooms
 		redTeam[temp - 1] = [];
 		blueTeam[temp - 1] = [];
-		io.sockets.emit('showRooms', rooms);
+		io.sockets.emit('showRooms', rooms, usersInRoom);
 	});
 	
 	socket.on('join room', function(data){
 	
 		socket.room = data;
 		socket.join(data);
+
+		//Zwiększam ilość osób w pokoju
+		usersInRoom[data]++;
+		//I wyświetlam wszystkim
+		io.sockets.emit('showRooms', rooms, usersInRoom);
 		
 		//Dopisuję użytkownika do drużyny, gdzie jest mniej osób
 		if(blueTeam[socket.room].length > redTeam[socket.room].length){
@@ -182,6 +285,11 @@ io.sockets.on('connection', function (socket) {
 		socket.leave(tempRoom);
 		socket.room = "";
 		socket.team = "";
+
+		//Zmniejszam ilość osób w pokoju
+		usersInRoom[tempRoom]--;
+		//I wyświetlam wszystkim
+		io.sockets.emit('showRooms', rooms, usersInRoom);
 		
 		//usuwam użytkownika z zespołu:
 		if(tempTeam == "blue"){
