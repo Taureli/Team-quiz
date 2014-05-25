@@ -18,6 +18,7 @@ $(function(){
 	var $ansb = $('#ansb');
 	var $ansc = $('#ansc');
 	var $ansd = $('#ansd');
+	var $Username = $('#Username');
 
 
 	//--------ZAMIANA TAGÓW---------
@@ -114,6 +115,11 @@ $(function(){
 		var name = prompt("Podaj swoją nazwę:");
 
 		socket.emit('check name', name);
+	});
+
+	//Wyświetla nazwę zalogowanego usera
+	socket.on('showName', function(data){
+		$Username.html("Zalogowano jako: " + data);
 	});
 
 	//Aktualizacja chatu

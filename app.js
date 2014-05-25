@@ -66,15 +66,18 @@ passport.deserializeUser(function (obj, done) {
 
 passport.use(new LocalStrategy(
     function (username, password, done) {
-        if ((username === 'admin') && (password === 'tajne')) {
-            console.log("Udane logowanie...");
-            return done(null, {
-                username: username,
-                password: password
-            });
-        } else {
-            return done(null, false);
-        }
+
+    	client.hget(username, "password", function(err, reply){
+    		if(reply === password){
+    			console.log("Udane logowanie...");
+	            return done(null, {
+	                username: username,
+	                password: password
+	            });
+    		} else {
+    			return done(null, false);
+      		}
+    	});
     }
 ));
 
@@ -130,6 +133,31 @@ app.post('/login',
     }
 );
 
+//REJESTRACJA
+app.post('/register', function (req, res){
+
+	if(req.body.password === req.body.password2){
+
+		login = req.body.username;
+		password = req.body.password;
+
+		client.hmset(login, "password", password, function(err, reply){
+	    	if(err){
+	    		console.log(err);
+	    	} else {
+	    		console.log("Zarejestrowano użytkownika: " + login);
+	    		//logowanie po rejestracji:
+	    		passport.authenticate('local')(req, res, function(){
+	    			return res.redirect('/');
+	    		});
+	    	}
+	    });
+	} else {
+		res.redirect('/login');
+	}
+
+});
+
 var onAuthorizeSuccess = function (data, accept) {
     console.log('Udane połączenie z socket.io');
     accept(null, true);
@@ -146,7 +174,7 @@ var onAuthorizeFail = function (data, message, error, accept) {
 io.set('authorization', passportSocketIo.authorize({
     passport: passport,
     cookieParser: cookieParser,
-    key: sessionKey, // nazwa ciasteczka, w którym express/connect przechowuje identyfikator sesji
+    key: sessionKey, // nazwa ciasteczka
     secret: sessionSecret,
     store: sessionStore,
     success: onAuthorizeSuccess,
@@ -205,6 +233,7 @@ io.sockets.on('connection', function (socket) {
 
 	//Wyświetlanie istniejących pokoi po podłączeniu:
 	socket.emit('showRooms', rooms, usersInRoom);
+	socket.emit('showName', socket.username);
 	//socket.emit('choose name');
 
 	//Ustawianie nazwy
