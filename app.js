@@ -301,6 +301,7 @@ var addPoints = function (socket){
 	} else if(bluePoints[socket.room] === 5) {
 		io.sockets.in(socket.room).emit('wygrana', "blue");
 	} else {
+		//Jak nie, to następne pytanie
 		nextQuestion(socket);
 	}
 
@@ -315,6 +316,9 @@ var takePoints = function (socket){
 	}
 
 	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
+
+	//następne pytanie
+	nextQuestion(socket);
 
 };
 
