@@ -159,12 +159,9 @@ $(function(){
 		$bluePoints.html(blue);
 	});
 
-	socket.on('wygrana', function (team){
-		$ansa.hide();
-		$ansb.hide();
-		$ansc.hide();
-		$ansd.hide();
-		$question.html("WYGRAŁA DRUŻYNA " + team);
+	socket.on('wygrana', function (team, mypoints, enemypoints){
+		alert("Wygrała drużyna " + team + ", zdoywając " + mypoints + " punktów! \nDrużyna przeciwna uzyskała " + enemypoints + " punktów!");
+		socket.emit('next game');
 	});
 	
 });

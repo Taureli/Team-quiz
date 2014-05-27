@@ -1,7 +1,7 @@
  <!doctype html>
  <html>
   <head>
-      <title>login</title>
+      <title>Drużynowy quiz - login</title>
       <link rel='stylesheet' href ='/stylesheets/style.css' />
       <link rel='stylesheet' href ='bootstrap.css' />
       <script type='text/javascript' src='/socket.io/socket.io.js'></script>
@@ -10,27 +10,40 @@
   </head>
 
   <body>
-    LOGOWANIE<br/>
-    <div id="loginForm">
-      <form action="/login" method="post">
-      <div><label>Użytkownik:</label>
-      <input type="text" name="username"/><br/></div>
-      <div><label>Hasło:</label>'
-      <input type="password" name="password"/></div>
-      <div><input type="submit" value="Zaloguj"/></div></form>
-    </div>
-    <br/>
+    <div id="wszystko">
+      <div class="col-md-6 well well-lg" id="loginForm">
+        <h4>LOGOWANIE</h4>
+        <form action="/login" method="post">
+          <div class="form-group">
+            <label>Login:</label>
+            <input type="text" name="username" class="form-control" placeholder="Login"/>
+          </div>
+          <div class="form-group">
+            <label>Hasło:</label>
+            <input type="password" name="password" class="form-control" placeholder="Hasło"/>
+          </div>
+          <div><input type="submit" class="btn btn-primary" value="Zaloguj"/></div>
+        </form>
+      </div>
 
-    REJESTRACJA<br/>
-    <div id="registerForm">
-      <form action="/register" method="post">
-      <div><label>Użytkownik:</label>
-      <input type="text" name="username"/><br/></div>
-      <div><label>Hasło:</label>'
-      <input type="password" name="password"/></div>
-      <div><label>Powtórz hasło:</label>'
-      <input type="password" name="password2"/></div>
-      <div><input type="submit" value="Zarejestruj"/></div></form>
+      <div class="col-md-6 well well-lg" id="registerForm">
+        <h4>REJESTRACJA</h4>
+        <form action="/register" method="post">
+          <div class="form-group">
+            <label>Login:</label>
+            <input type="text" name="username" class="form-control" placeholder="Login"/>
+          </div>
+          <div class="form-group">
+            <label class="form-group">Hasło:</label>
+            <input type="password" name="password" class="form-control" placeholder="Hasło"/>
+          </div>
+          <div class="form-group">
+            <label>Powtórz hasło:</label>
+            <input type="password" name="password2" class="form-control" placeholder="Powtórz hasło"/>
+          </div>
+          <div><input type="submit" class="btn btn-primary" value="Zarejestruj"/></div>
+        </form>
+      </div>
     </div>
 
    </body>

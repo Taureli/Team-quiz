@@ -14,7 +14,7 @@ var users = require('./routes/users');
 var app = express();
 
 //moje zmienne
-var rooms = ["Room0", "Room1"];	//Tu będą zapisywane wszystkie istniejące pokoje
+var rooms = ["Pokój 0", "Pokój 1"];	//Tu będą zapisywane wszystkie istniejące pokoje
 var usersInRoom = [0, 0];		//Przechowuje liczbe graczy w danym pokoju
 var usernames = [];		//Do zapisywania nazw wszystkich użytkowników
 
@@ -297,9 +297,11 @@ var addPoints = function (socket){
 
 	//Sprawdzam czy któraś drużyna wygrała
 	if(redPoints[socket.room] === 5) {
-		io.sockets.in(socket.room).emit('wygrana', "red");
+		io.sockets.in(socket.room).emit('wygrana', "czerwona", redPoints[socket.room], bluePoints[socket.room]);
+		restart(socket);
 	} else if(bluePoints[socket.room] === 5) {
-		io.sockets.in(socket.room).emit('wygrana', "blue");
+		io.sockets.in(socket.room).emit('wygrana', "niebieska", bluePoints[socket.room], redPoints[socket.room]);
+		restart(socket);
 	} else {
 		//Jak nie, to następne pytanie
 		nextQuestion(socket);
@@ -320,6 +322,14 @@ var takePoints = function (socket){
 	//następne pytanie
 	nextQuestion(socket);
 
+};
+
+//Po skończonej grze, zerowanie punktów
+var restart = function (socket){
+	redPoints[socket.room] = 0;
+	bluePoints[socket.room] = 0;
+
+	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
 };
 
 io.sockets.on('connection', function (socket) {
@@ -381,6 +391,10 @@ io.sockets.on('connection', function (socket) {
 			takePoints(socket);
 		}
 
+	});
+
+	socket.on('next game', function(){
+		nextQuestion(socket);
 	});
 	
 	
