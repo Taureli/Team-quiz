@@ -293,13 +293,15 @@ var addPoints = function (socket){
 		bluePoints[socket.room]++;
 	}
 
+	socket.points++;
+
 	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
 
 	//Sprawdzam czy któraś drużyna wygrała
-	if(redPoints[socket.room] === 5) {
+	if(redPoints[socket.room] === 20) {
 		io.sockets.in(socket.room).emit('wygrana', "czerwona", redPoints[socket.room], bluePoints[socket.room]);
 		restart(socket);
-	} else if(bluePoints[socket.room] === 5) {
+	} else if(bluePoints[socket.room] === 20) {
 		io.sockets.in(socket.room).emit('wygrana', "niebieska", bluePoints[socket.room], redPoints[socket.room]);
 		restart(socket);
 	} else {
@@ -316,6 +318,8 @@ var takePoints = function (socket){
 	} else {
 		bluePoints[socket.room]--;
 	}
+
+	socket.points--;
 
 	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
 
@@ -354,6 +358,7 @@ io.sockets.on('connection', function (socket) {
 	
 		socket.room = data;
 		socket.join(data);
+		socket.points = 0;
 
 		//Dodaję gracza do pokoju i drużyny
 		addPlayer(socket);
