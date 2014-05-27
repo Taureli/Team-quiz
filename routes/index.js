@@ -14,7 +14,7 @@ client.on('error', function (err) {
 
 var isAuthenticated = function(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
-  res.redirect('/login')
+  res.redirect('/login');
 };
 
 router.get('/login', function(req, res){

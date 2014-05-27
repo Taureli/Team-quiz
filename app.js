@@ -6,6 +6,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var less = require('less-middleware');
+var fs = require('fs');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -24,9 +25,14 @@ blueTeam[0] = [];
 redTeam[1] = [];
 blueTeam[1] = [];
 
+//potrzebne do bezpiecznego połączenia:
+var privateKey = fs.readFileSync('cert/privatekey.pem').toString();
+var certificate = fs.readFileSync('cert/certificate.pem').toString();
+
+var credentials = {key: privateKey, cert: certificate};
 
 //socket.io
-var server = require('http').createServer(app);
+var server = require('https').createServer(credentials, app);
 var io = require('socket.io').listen(server);
 server.listen(3000, function () {
     console.log('Serwer działa na porcie 3000');
@@ -182,6 +188,8 @@ app.use(function(err, req, res, next) {
 io.sockets.on('connection', function (socket) {
 
 	socket.username = socket.handshake.user.username;
+
+	client.bgsave();
 
 	//Wyświetlanie istniejących pokoi po podłączeniu:
 	socket.emit('showRooms', rooms, usersInRoom);

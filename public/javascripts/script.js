@@ -45,7 +45,7 @@ $(function(){
 		e.preventDefault();	//deaktywacja "defaultowego" dzialania buttona
 		var newRoomName = prompt("Podaj nazwę nowego pokoju:");
 		
-		if(newRoomName != null){
+		if(newRoomName !== null){
 			socket.emit('create room', newRoomName);
 		}
 	
