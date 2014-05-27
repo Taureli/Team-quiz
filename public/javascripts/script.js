@@ -17,6 +17,8 @@ $(function(){
 	var $ansb = $('#ansb');
 	var $ansc = $('#ansc');
 	var $ansd = $('#ansd');
+	var $bluePoints = $('#bluePoints');
+	var $redPoints = $('#redPoints');
 
 
 	//--------ZAMIANA TAGÓW---------
@@ -74,18 +76,26 @@ $(function(){
 
 	$ansa.click(function(e){
 		e.preventDefault();
+
+		socket.emit('check answer', this.name);
 	});
 
 	$ansb.click(function(e){
 		e.preventDefault();
+
+		socket.emit('check answer', this.name);
 	});
 
 	$ansc.click(function(e){
 		e.preventDefault();
+
+		socket.emit('check answer', this.name);
 	});
 
 	$ansd.click(function(e){
 		e.preventDefault();
+
+		socket.emit('check answer', this.name);
 	});
 	
 	//Przyciski-pokoje są tworzone dynamicznie, dlatego metoda przypisania "klika" jest nieco inna:
@@ -144,5 +154,17 @@ $(function(){
     	$ansd.html(ansd);
     });
 	
+	socket.on('punkty', function (red, blue){
+		$redPoints.html(red);
+		$bluePoints.html(blue);
+	});
+
+	socket.on('wygrana', function (team){
+		$ansa.hide();
+		$ansb.hide();
+		$ansc.hide();
+		$ansd.hide();
+		$question.html("WYGRAŁA DRUŻYNA " + team);
+	});
 	
 });

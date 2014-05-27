@@ -17,6 +17,7 @@ var app = express();
 var rooms = ["Room0", "Room1"];	//Tu będą zapisywane wszystkie istniejące pokoje
 var usersInRoom = [0, 0];		//Przechowuje liczbe graczy w danym pokoju
 var usernames = [];		//Do zapisywania nazw wszystkich użytkowników
+
 var redTeam = {};		//Do przechowywania informacji kto jest w jakiej
 var blueTeam = {};		//drużynie w danym pokoju
 //Tworzę tablice dla defaultowych pokoi:
@@ -24,6 +25,13 @@ redTeam[0] = [];
 blueTeam[0] = [];
 redTeam[1] = [];
 blueTeam[1] = [];
+
+var redPoints = [];		//Przechowuje punkty drużyn
+var bluePoints = [];	//w danym pokoju
+redPoints[0] = 0;
+redPoints[1] = 0;
+bluePoints[0] = 0;
+bluePoints[1] = 0;
 
 //potrzebne do bezpiecznego połączenia:
 var privateKey = fs.readFileSync('cert/privatekey.pem').toString();
@@ -202,6 +210,10 @@ var addPlayer = function (socket){
 		socket.team = "blue";
 	}
 
+	//Pokazuje ilość punktów
+	socket.emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
+
+	//Wiadomość w czacie
 	var temp = " * Użytkownik " + socket.username + " dołączył do pokoju " + socket.room;
 	console.log("SENT %s", temp);
 	io.sockets.in(socket.room).emit('joined left', blueTeam[socket.room], redTeam[socket.room], temp);
@@ -241,11 +253,76 @@ var removePlayer = function (team, room, name){
 
 };
 
+//Zwraca losową liczbę z podanego przedziału
+var randomInt = function (min, max){
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+var nextQuestion = function (socket){
+
+	//Pobieram pytanie z bazy i wyświetlam pytanie
+	client.get("questions", function(err, reply){
+
+		var allQuestions = JSON.parse(reply);
+
+		//losowe pytanie
+		rand = randomInt(0, allQuestions.questions.length);
+
+		pytanie = allQuestions.questions[rand].question;
+
+		ansa = allQuestions.questions[rand].a;
+		ansb = allQuestions.questions[rand].b;
+		ansc = allQuestions.questions[rand].c;
+		ansd = allQuestions.questions[rand].d;
+
+		socket.correct = allQuestions.questions[rand].correct;
+
+		console.log("PYTANIE %s", JSON.stringify(pytanie));
+
+		socket.emit('show question', pytanie, ansa, ansb, ansc, ansd);
+
+	});		
+
+};
+
+var addPoints = function (socket){
+
+	if(socket.team === "red"){
+		redPoints[socket.room]++;
+	} else {
+		bluePoints[socket.room]++;
+	}
+
+	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
+
+	//Sprawdzam czy któraś drużyna wygrała
+	if(redPoints[socket.room] === 5) {
+		io.sockets.in(socket.room).emit('wygrana', "red");
+	} else if(bluePoints[socket.room] === 5) {
+		io.sockets.in(socket.room).emit('wygrana', "blue");
+	} else {
+		nextQuestion(socket);
+	}
+
+};
+
+var takePoints = function (socket){
+
+	if(socket.team === "red"){
+		redPoints[socket.room]--;
+	} else {
+		bluePoints[socket.room]--;
+	}
+
+	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
+
+};
+
 io.sockets.on('connection', function (socket) {
 
 	socket.username = socket.handshake.user.username;
 
-	client.bgsave();
+	//client.bgsave();
 
 	//Wyświetlanie istniejących pokoi po podłączeniu:
 	socket.emit('showRooms', rooms, usersInRoom);
@@ -267,24 +344,8 @@ io.sockets.on('connection', function (socket) {
 		//Dodaję gracza do pokoju i drużyny
 		addPlayer(socket);
 
-
-		//Pobieram pytanie z bazy i wyświetlam pytanie
-		client.get("questions", function(err, reply){
-
-			var allQuestions = JSON.parse(reply);
-
-			pytanie = allQuestions.questions[0].question;
-			ansa = allQuestions.questions[0].a;
-			ansb = allQuestions.questions[0].b;
-			ansc = allQuestions.questions[0].c;
-			ansd = allQuestions.questions[0].d;
-
-			console.log("PYTANIE %s", JSON.stringify(pytanie));
-
-			socket.emit('show question', pytanie, ansa, ansb, ansc, ansd);
-
-		});		
-		
+		//Wyświetlam pytanie
+		nextQuestion(socket);
 		
 	});
 
@@ -304,6 +365,18 @@ io.sockets.on('connection', function (socket) {
 		//usuwam użytkownika z zespołu i pokoju:
 		removePlayer(tempTeam, tempRoom, socket.username);
 		
+	});
+
+	socket.on('check answer', function(data){
+
+		console.log("correct: " + socket.correct + " / pressed: " + data);
+
+		if(socket.correct === data){
+			addPoints(socket);
+		} else {
+			takePoints(socket);
+		}
+
 	});
 	
 	
