@@ -2,7 +2,6 @@ $(function(){
 
 	var socket = io.connect();
 	
-	//zmienne DOM:
 	var $game = $('#game');
 	var $rooms = $('#rooms');
 	var $makeRoom = $('#makeRoom');
@@ -18,7 +17,6 @@ $(function(){
 	var $ansb = $('#ansb');
 	var $ansc = $('#ansc');
 	var $ansd = $('#ansd');
-	var $Username = $('#Username');
 
 
 	//--------ZAMIANA TAGÓW---------
@@ -37,6 +35,7 @@ $(function(){
     };
 	//--------------------------------
 	
+	//Na początku widoczny jest wybór pokoi
 	$game.hide();
 	
 	//Przypisuje funkcje klik do buttonow:
@@ -110,16 +109,9 @@ $(function(){
 		});
 	});
 
-	//Ustawianie nazwy użytkownika
-	socket.on('choose name', function(data){
-		var name = prompt("Podaj swoją nazwę:");
-
-		socket.emit('check name', name);
-	});
-
 	//Wyświetla nazwę zalogowanego usera
 	socket.on('showName', function(data){
-		$Username.html("Zalogowano jako: " + data);
+		$('#Username').html("Zalogowano jako: " + data);
 	});
 
 	//Aktualizacja chatu
