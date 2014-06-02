@@ -277,6 +277,15 @@ var nextQuestion = function (socket){
 		//losowe pytanie
 		rand = randomInt(0, allQuestions.questions.length);
 
+		//Sprawdzam czy ostatnio nie wylosowano tego samego pytania
+		//i ewentualnie powtarzam losowanie
+		while(socket.lastq === rand){
+			rand = randomInt(0, allQuestions.questions.length);
+		}
+
+		//zapamiętuję ostatnie pytanie:
+		socket.lastq = rand;
+
 		pytanie = allQuestions.questions[rand].question;
 
 		ansa = allQuestions.questions[rand].a;
