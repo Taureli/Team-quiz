@@ -194,7 +194,11 @@ app.use(function(err, req, res, next) {
 //--------------GŁÓWNY-KOD-------------
 
 //Dodaje gracza do drużyny i wysyła informację
-var addPlayer = function (socket){
+var addPlayer = function (socket, data){
+
+	socket.room = data;
+	socket.join(data);
+	socket.points = 0;
 
 	//Zwiększam ilość osób w pokoju
 	usersInRoom[socket.room]++;
@@ -217,6 +221,9 @@ var addPlayer = function (socket){
 	var temp = " * Użytkownik " + socket.username + " dołączył do pokoju " + socket.room;
 	console.log("SENT %s", temp);
 	io.sockets.in(socket.room).emit('joined left', blueTeam[socket.room], redTeam[socket.room], temp);
+
+	//Wyświetlam pytanie
+	nextQuestion(socket);
 
 };
 
@@ -295,14 +302,35 @@ var addPoints = function (socket){
 
 	socket.points++;
 
+	//Zapisuję punkty użytkownikowi
+	socket.allPunkty++;
+	var statystyki = {"allPunkty":socket.allPunkty,"wygrane":socket.wygrane,"przegrane":socket.przegrane};
+	var statystyki2 = JSON.stringify(statystyki);
+
+	client.hmset(socket.username, "stats", statystyki2, function(err, reply2){
+	   	if(err){
+	   		console.log(err);
+		} else {
+	   		console.log("Zaktualizowano statystyki");
+	    }
+	});
+
 	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
 
 	//Sprawdzam czy któraś drużyna wygrała
 	if(redPoints[socket.room] === 20) {
 		io.sockets.in(socket.room).emit('wygrana', "czerwona", redPoints[socket.room], bluePoints[socket.room]);
+		if(socket.team === "red")
+			wygrana(socket);
+		else
+			przegrana(socket);
 		restart(socket);
 	} else if(bluePoints[socket.room] === 20) {
 		io.sockets.in(socket.room).emit('wygrana', "niebieska", bluePoints[socket.room], redPoints[socket.room]);
+		if(socket.team === "blue")
+			wygrana(socket);
+		else
+			przegrana(socket);
 		restart(socket);
 	} else {
 		//Jak nie, to następne pytanie
@@ -321,6 +349,19 @@ var takePoints = function (socket){
 
 	socket.points--;
 
+	//Zapisuję punkty użytkownikowi
+	socket.allPunkty--;
+	var statystyki = {"allPunkty":socket.allPunkty,"wygrane":socket.wygrane,"przegrane":socket.przegrane};
+	var statystyki2 = JSON.stringify(statystyki);
+
+	client.hmset(socket.username, "stats", statystyki2, function(err, reply2){
+	   	if(err){
+	   		console.log(err);
+		} else {
+	   		console.log("Zaktualizowano statystyki");
+	    }
+	});
+
 	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
 
 	//następne pytanie
@@ -336,36 +377,99 @@ var restart = function (socket){
 	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
 };
 
+//Pobieram i wyświetlam statystyki użytkownika
+var stats = function (socket){
+	var nazwa = socket.username;
+	client.hget(nazwa, "stats", function(err, reply){
+		if (!reply){
+			//pierwsze logowanie - przypisuję statystyki użytkownikowi
+			var statystyki = {"allPunkty":"0","wygrane":"0","przegrane":"0"};
+			var statystyki2 = JSON.stringify(statystyki);
+			socket.allPunkty = 0;
+			socket.wygrane = 0;
+			socket.przegrane = 0;
+
+			client.hmset(nazwa, "stats", statystyki2, function(err, reply2){
+		    	if(err){
+		    		console.log(err);
+		    	} else {
+		    		console.log("Przypisano statystyki nowemu graczowi");
+		    	}
+		    });
+
+		    socket.emit('show stats', socket.username, socket.allPunkty, socket.wygrane, socket.przegrane);
+
+		} else {
+			var statystyki3 = JSON.parse(reply);
+			socket.allPunkty = statystyki3.allPunkty;
+			socket.wygrane = statystyki3.wygrane;
+			socket.przegrane = statystyki3.przegrane;
+			socket.emit('show stats', socket.username, socket.allPunkty, socket.wygrane, socket.przegrane);
+		}
+
+	});
+
+};
+
+var wygrana = function (socket){
+	socket.wygrane++;
+	var statystyki = {"allPunkty":socket.allPunkty,"wygrane":socket.wygrane,"przegrane":socket.przegrane};
+	var statystyki2 = JSON.stringify(statystyki);
+
+	client.hmset(socket.username, "stats", statystyki2, function(err, reply2){
+	   	if(err){
+	   		console.log(err);
+		} else {
+	   		console.log("Zaktualizowano statystyki");
+	    }
+	});
+};
+
+var przegrana = function (socket){
+	socket.przegrane++;
+	var statystyki = {"allPunkty":socket.allPunkty,"wygrane":socket.wygrane,"przegrane":socket.przegrane};
+	var statystyki2 = JSON.stringify(statystyki);
+
+	client.hmset(socket.username, "stats", statystyki2, function(err, reply2){
+	   	if(err){
+	   		console.log(err);
+		} else {
+	   		console.log("Zaktualizowano statystyki");
+	    }
+	});
+};
+
 io.sockets.on('connection', function (socket) {
 
 	socket.username = socket.handshake.user.username;
 
-	//client.bgsave();
-
 	//Wyświetlanie istniejących pokoi po podłączeniu:
 	socket.emit('showRooms', rooms, usersInRoom);
-	socket.emit('showName', socket.username);
+	stats(socket);
+	
 	
 	socket.on('create room', function(data){
 		usersInRoom.push(0);
 		temp = rooms.push(data);	//temp przechowuje ilosc elementow w tablicy rooms
+	
+		//dane dla nowego pokoju
 		redTeam[temp - 1] = [];
 		blueTeam[temp - 1] = [];
+		redPoints[temp - 1] = 0;
+		bluePoints[temp - 1] = 0;
+
+		//pokazuję wszystkim nowy pokój
 		io.sockets.emit('showRooms', rooms, usersInRoom);
+
+		//Dodaję gracza do nowego pokoju
+		addPlayer(socket, temp - 1);
 	});
 	
 	socket.on('join room', function(data){
-	
-		socket.room = data;
-		socket.join(data);
-		socket.points = 0;
 
 		//Dodaję gracza do pokoju i drużyny
-		addPlayer(socket);
+		addPlayer(socket, data);
 
-		//Wyświetlam pytanie
-		nextQuestion(socket);
-		
 	});
 
 	socket.on('send msg', function (data) {
@@ -383,6 +487,8 @@ io.sockets.on('connection', function (socket) {
 
 		//usuwam użytkownika z zespołu i pokoju:
 		removePlayer(tempTeam, tempRoom, socket.username);
+		//pokazuje aktualne statystyki
+		stats(socket);
 		
 	});
 

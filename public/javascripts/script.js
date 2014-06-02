@@ -19,6 +19,7 @@ $(function(){
 	var $ansd = $('#ansd');
 	var $bluePoints = $('#bluePoints');
 	var $redPoints = $('#redPoints');
+	var $myStats = $('#myStats');
 
 
 	//--------ZAMIANA TAGÓW---------
@@ -48,6 +49,9 @@ $(function(){
 		
 		if(newRoomName !== null){
 			socket.emit('create room', newRoomName);
+			$game.show();
+			$rooms.hide();
+			$chatLog.html('');
 		}
 	
 	});
@@ -120,8 +124,12 @@ $(function(){
 	});
 
 	//Wyświetla nazwę zalogowanego usera
-	socket.on('showName', function(data){
-		$('#Username').html("Zalogowano jako: " + data);
+	socket.on('show stats', function(user, gry, wygrane, przegrane){
+		$('#Username').html("Zalogowano jako: " + user);
+		$myStats.html("<b>Twoje statystyki:</b><br>");
+		$myStats.append("Zebrane punkty: " + gry + "<br>");
+		$myStats.append("Wygrane gry: " + wygrane + "<br>");
+		$myStats.append("Przegrane gry: " + przegrane + "<br>");
 	});
 
 	//Aktualizacja chatu

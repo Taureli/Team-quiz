@@ -1,5 +1,7 @@
 var redis = require("redis"),
-    client = redis.createClient();
+    client = redis.createClient(17789,"pub-redis-17789.us-east-1-2.1.ec2.garantiadata.com");
+
+    client.auth("superquiz");
 
 /*
 	PATTERN:
@@ -45,9 +47,6 @@ var run = function () {
 	var db2 = JSON.stringify(db);
 
 	client.set("questions", db2, function (err, reply){
-		console.log(reply);
-	});
-	client.set("hello", "world", function (err, reply){
 		console.log(reply);
 	});
 
