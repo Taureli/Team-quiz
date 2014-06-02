@@ -60,7 +60,9 @@ var sessionKey = 'connect.sid';
 
 //REDIS
 var redis = require('redis'),
-    client = redis.createClient();
+    client = redis.createClient(17789,"pub-redis-17789.us-east-1-2.1.ec2.garantiadata.com");
+
+    client.auth("superquiz");
 
 client.on('error', function (err) {
     console.log('Error ' + err);
@@ -82,7 +84,7 @@ passport.use(new LocalStrategy(
     function (username, password, done) {
 
     	client.hget(username, "password", function(err, reply){
-    		if(reply === password){
+    		if(reply === md5(password)){
     			console.log("Udane logowanie...");
 	            return done(null, {
 	                username: username,
