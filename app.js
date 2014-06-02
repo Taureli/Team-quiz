@@ -322,17 +322,19 @@ var addPoints = function (socket){
 	//Sprawdzam czy któraś drużyna wygrała
 	if(redPoints[socket.room] === 20) {
 		io.sockets.in(socket.room).emit('wygrana', "czerwona", redPoints[socket.room], bluePoints[socket.room]);
-		if(socket.team === "red")
+		if(socket.team === "red"){
 			wygrana(socket);
-		else
+		} else {
 			przegrana(socket);
+		}
 		restart(socket);
 	} else if(bluePoints[socket.room] === 20) {
 		io.sockets.in(socket.room).emit('wygrana', "niebieska", bluePoints[socket.room], redPoints[socket.room]);
-		if(socket.team === "blue")
+		if(socket.team === "blue"){
 			wygrana(socket);
-		else
+		} else {
 			przegrana(socket);
+		}
 		restart(socket);
 	} else {
 		//Jak nie, to następne pytanie
@@ -441,6 +443,20 @@ var przegrana = function (socket){
 	});
 };
 
+var pustyPokoj = function (pokoj){
+	if(io.sockets.clients(pokoj).length < 1 && pokoj > 1){
+		for(var i = 2; i < rooms.length; i++){
+			if(i == pokoj){
+				temp1 = rooms.slice(0,i);
+				temp2 = rooms.slice(i + 1,rooms.length);
+				temp3 = temp1.concat(temp2);
+				rooms = temp3;
+			}
+		}
+		io.sockets.emit('showRooms', rooms, usersInRoom);
+	}
+};
+
 io.sockets.on('connection', function (socket) {
 
 	socket.username = socket.handshake.user.username;
@@ -489,8 +505,12 @@ io.sockets.on('connection', function (socket) {
 
 		//usuwam użytkownika z zespołu i pokoju:
 		removePlayer(tempTeam, tempRoom, socket.username);
+
 		//pokazuje aktualne statystyki
 		stats(socket);
+
+		//sprawdzam czy to była jedyna osoba w pokoju
+		pustyPokoj(tempRoom);
 		
 	});
 
@@ -508,6 +528,22 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('next game', function(){
 		nextQuestion(socket);
+	});
+
+	socket.on('disconnect', function(){
+		if(socket.room !== undefined && socket.room !== ""){
+			tempRoom = socket.room;
+			tempTeam = socket.team;
+			socket.leave(tempRoom);
+			socket.room = "";
+			socket.team = "";
+
+			//usuwam użytkownika z zespołu i pokoju:
+			removePlayer(tempTeam, tempRoom, socket.username);
+
+			//sprawdzam czy to była jedyna osoba w pokoju
+			pustyPokoj(tempRoom);
+		}
 	});
 	
 	
