@@ -321,20 +321,10 @@ var addPoints = function (socket){
 
 	//Sprawdzam czy któraś drużyna wygrała
 	if(redPoints[socket.room] === 20) {
-		io.sockets.in(socket.room).emit('wygrana', "czerwona", redPoints[socket.room], bluePoints[socket.room]);
-		if(socket.team === "red"){
-			wygrana(socket);
-		} else {
-			przegrana(socket);
-		}
+		io.sockets.in(socket.room).emit('wygrana', "czerwona", redPoints[socket.room], bluePoints[socket.room], "red");
 		restart(socket);
 	} else if(bluePoints[socket.room] === 20) {
-		io.sockets.in(socket.room).emit('wygrana', "niebieska", bluePoints[socket.room], redPoints[socket.room]);
-		if(socket.team === "blue"){
-			wygrana(socket);
-		} else {
-			przegrana(socket);
-		}
+		io.sockets.in(socket.room).emit('wygrana', "niebieska", bluePoints[socket.room], redPoints[socket.room], "blue");
 		restart(socket);
 	} else {
 		//Jak nie, to następne pytanie
@@ -526,8 +516,20 @@ io.sockets.on('connection', function (socket) {
 
 	});
 
-	socket.on('next game', function(){
+	socket.on('next game', function(data){
 		nextQuestion(socket);
+		if(socket.team === data)
+			wygrana(socket);
+		else if(socket.team !== "" || socket.team !== undefined)
+			przegrana(socket);
+	});
+
+	socket.on('wygrana', function(){
+		wygrana(socket);
+	});
+
+	socket.on('przegrana', function(){
+		przegrana(socket);
 	});
 
 	socket.on('disconnect', function(){

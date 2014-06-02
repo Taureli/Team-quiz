@@ -167,9 +167,9 @@ $(function(){
 		$bluePoints.html(blue);
 	});
 
-	socket.on('wygrana', function (team, mypoints, enemypoints){
+	socket.on('wygrana', function (team, mypoints, enemypoints, team2){
 		alert("Wygrała drużyna " + team + ", zdoywając " + mypoints + " punktów! \nDrużyna przeciwna uzyskała " + enemypoints + " punktów!");
-		socket.emit('next game');
+		socket.emit('next game', team2);
 	});
 	
 });

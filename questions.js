@@ -35,7 +35,7 @@ var run = function () {
 		{"question":"Do ilu mórz dostęp ma Izrael?","a":"dwóch","b":"jednego","c":"trzech","d":"żadnego","correct":"a"},
 		{"question":"Jaka jest główna różnica między Coca-Colą sprzedawaną w USA, a tą w UE?","a":"woda","b":"kofeina","c":"cukier","d":"poziom CO2","correct":"c"},
 		{"question":"Ile kości ma dorosły człowiek?","a":"104","b":"206","c":"26","d":"52","correct":"b"},
-		{"question":"Jakie katastrofy naturalne występują na Księżycu?","a":"wybuchy wulkanów","b":"burze pyłowe","c":"powodzie","d":"trzęsienia ziemi","correct":"c"},
+		{"question":"Jakie katastrofy naturalne występują na Księżycu?","a":"wybuchy wulkanów","b":"burze pyłowe","c":"powodzie","d":"trzęsienia ziemi","correct":"d"},
 		{"question":"W jakim statku powietrznym odbył się pierwszy nieprzerwany lot dookola świata?","a":"dwupłatowcu","b":"balonie na rozgrzane powietrze","c":"szybowcu","d":"samolocie odrzutowym","correct":"b"},
 		{"question":"Co jest największe z podanych?","a":"mila morska","b":"mila lądowa w USA","c":"wiorsta","d":"kilometr","correct":"a"},
 		{"question":"W którym Europejskim mieście znajduje się najwięcej drapaczy chmur?","a":"w Londynie","b":"we Frankfurcie","c":"w Moskiwe","d":"w Madrycie","correct":"c"},
