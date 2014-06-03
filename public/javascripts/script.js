@@ -13,10 +13,10 @@ $(function(){
 	var $send = $('#send');
 	var $message = $('#message');
 	var $question = $('#question');
-	var $ansa = $('#ansa');
-	var $ansb = $('#ansb');
-	var $ansc = $('#ansc');
-	var $ansd = $('#ansd');
+	var $a = $('#a');
+	var $b = $('#b');
+	var $c = $('#c');
+	var $d = $('#d');
 	var $bluePoints = $('#bluePoints');
 	var $redPoints = $('#redPoints');
 	var $myStats = $('#myStats');
@@ -78,28 +78,28 @@ $(function(){
 	
 	});
 
-	$ansa.click(function(e){
+	$a.click(function(e){
 		e.preventDefault();
 
-		socket.emit('check answer', this.name);
+		socket.emit('check answer', this.id);
 	});
 
-	$ansb.click(function(e){
+	$b.click(function(e){
 		e.preventDefault();
 
-		socket.emit('check answer', this.name);
+		socket.emit('check answer', this.id);
 	});
 
-	$ansc.click(function(e){
+	$c.click(function(e){
 		e.preventDefault();
 
-		socket.emit('check answer', this.name);
+		socket.emit('check answer', this.id);
 	});
 
-	$ansd.click(function(e){
+	$d.click(function(e){
 		e.preventDefault();
 
-		socket.emit('check answer', this.name);
+		socket.emit('check answer', this.id);
 	});
 	
 	//Przyciski-pokoje są tworzone dynamicznie, dlatego metoda przypisania "klika" jest nieco inna:
@@ -113,6 +113,22 @@ $(function(){
 		$chatLog.html('');	//Czyszczę chat z wcześniejszych informacji
 	
 	});
+
+	var nextQuestion = function (btn1, btn2){
+		//aktywuję z powrotem przyciski
+		$a.removeAttr("disabled");
+		$b.removeAttr("disabled");
+		$c.removeAttr("disabled");
+		$d.removeAttr("disabled");
+
+		//zmieniam kolory na domyślne
+		$('#' + btn1).toggleClass( "btn-success btn-warning");
+		if(btn2 !== null)
+			$('#' + btn2).toggleClass( "btn-danger btn-warning");
+
+		//Przechodzę do następnego pytania
+		socket.emit('next question');
+	};
 	
 	//Wypisywanie wszystkich dostępnych pokoi
 	socket.on('showRooms', function(data, usersInRoom){
@@ -154,22 +170,58 @@ $(function(){
         $chatLog.append(info + '<br/>');
     });
 
+	//Wyświetlenie pytania i odpowiedzi
     socket.on('show question', function (question, ansa, ansb, ansc, ansd){
     	$question.html(question);
-    	$ansa.html(ansa);
-    	$ansb.html(ansb);
-    	$ansc.html(ansc);
-    	$ansd.html(ansd);
+    	$a.html(ansa);
+    	$b.html(ansb);
+    	$c.html(ansc);
+    	$d.html(ansd);
     });
 	
+	//Aktualizacja ogólnej punktacji
 	socket.on('punkty', function (red, blue){
 		$redPoints.html(red);
 		$bluePoints.html(blue);
 	});
 
+	//Jeśli któraś drużyna wygrała, wyświetlam alert z informacją
 	socket.on('wygrana', function (team, mypoints, enemypoints, team2){
 		alert("Wygrała drużyna " + team + ", zdoywając " + mypoints + " punktów! \nDrużyna przeciwna uzyskała " + enemypoints + " punktów!");
 		socket.emit('next game', team2);
+	});
+
+	//Jeśli gracz udzielił dobrej odpowiedzi, podświetl przycisk na zielono
+	socket.on('correct', function (answer){
+		//wyłączam buttony, żeby nie można było 'nabijać' punktów na tym samym pytaniu
+		$a.attr("disabled", "disabled");
+		$b.attr("disabled", "disabled");
+		$c.attr("disabled", "disabled");
+		$d.attr("disabled", "disabled");
+
+		//podświetlam przycisk na zielono
+		$('#' + answer).toggleClass( "btn-warning btn-success");
+
+		//po 2 sekundach wywołuje funkcję
+		setTimeout(function(){ nextQuestion(answer, null) }, 2000);
+	});
+
+	//Jeśli gracz udzielił złej odpowiedzi, zaznaczam dobrą odpowiedź
+	//na zielono, a odpowiedź gracza na czerwono
+	socket.on('wrong', function (corr, answer){
+		//wyłączam buttony, żeby nie można było 'nabijać' punktów na tym samym pytaniu
+		$a.attr("disabled", "disabled");
+		$b.attr("disabled", "disabled");
+		$c.attr("disabled", "disabled");
+		$d.attr("disabled", "disabled");
+
+		//podświetlam przycisk dobrej odpowiedzi na zielono
+		$('#' + corr).toggleClass( "btn-warning btn-success");
+		//i odpowiedź gracza na czerwono
+		$('#' + answer).toggleClass( "btn-warning btn-danger");
+
+		//po 2 sekundach wywołuje funkcję
+		setTimeout(function(){ nextQuestion(corr, answer) }, 2000);
 	});
 	
 });

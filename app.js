@@ -335,9 +335,6 @@ var addPoints = function (socket){
 	} else if(bluePoints[socket.room] === 20) {
 		io.sockets.in(socket.room).emit('wygrana', "niebieska", bluePoints[socket.room], redPoints[socket.room], "blue");
 		restart(socket);
-	} else {
-		//Jak nie, to następne pytanie
-		nextQuestion(socket);
 	}
 
 };
@@ -366,9 +363,6 @@ var takePoints = function (socket){
 	});
 
 	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
-
-	//następne pytanie
-	nextQuestion(socket);
 
 };
 
@@ -465,7 +459,7 @@ io.sockets.on('connection', function (socket) {
 	stats(socket);
 	
 	
-	socket.on('create room', function(data){
+	socket.on('create room', function (data){
 		usersInRoom.push(0);
 		temp = rooms.push(data);	//temp przechowuje ilosc elementow w tablicy rooms
 	
@@ -482,7 +476,7 @@ io.sockets.on('connection', function (socket) {
 		addPlayer(socket, temp - 1);
 	});
 	
-	socket.on('join room', function(data){
+	socket.on('join room', function (data){
 
 		//Dodaję gracza do pokoju i drużyny
 		addPlayer(socket, data);
@@ -495,7 +489,7 @@ io.sockets.on('connection', function (socket) {
 		io.sockets.in(socket.room).emit('rec msg', data);
 	});
 	
-	socket.on('leave room', function(){
+	socket.on('leave room', function (){
 		tempRoom = socket.room;
 		tempTeam = socket.team;
 		socket.leave(tempRoom);
@@ -513,19 +507,28 @@ io.sockets.on('connection', function (socket) {
 		
 	});
 
-	socket.on('check answer', function(data){
+	//Sprawdzenie czy gracz udzielił dobrej odpowiedzi
+	socket.on('check answer', function (data){
 
 		console.log("correct: " + socket.correct + " / pressed: " + data);
 
 		if(socket.correct === data){
 			addPoints(socket);
+			socket.emit('correct', socket.correct);
 		} else {
 			takePoints(socket);
+			socket.emit('wrong', socket.correct, data);
 		}
 
 	});
 
-	socket.on('next game', function(data){
+	//Przejście do następnego pytania
+	socket.on('next question', function (data){
+		nextQuestion(socket);
+	});
+
+	//Koniec gry - uaktualnienie statystyk graczy i następna runda
+	socket.on('next game', function (data){
 		nextQuestion(socket);
 		if(socket.team === data)
 			wygrana(socket);
@@ -533,15 +536,16 @@ io.sockets.on('connection', function (socket) {
 			przegrana(socket);
 	});
 
-	socket.on('wygrana', function(){
+	socket.on('wygrana', function (){
 		wygrana(socket);
 	});
 
-	socket.on('przegrana', function(){
+	socket.on('przegrana', function (){
 		przegrana(socket);
 	});
 
-	socket.on('disconnect', function(){
+	//Rozłączenie socketa - wyjście z gry i drużyny, jeśli był w pokoju
+	socket.on('disconnect', function (){
 		if(socket.room !== undefined && socket.room !== ""){
 			tempRoom = socket.room;
 			tempTeam = socket.team;
