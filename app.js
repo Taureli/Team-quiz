@@ -528,6 +528,8 @@ var pustyPokoj = function(pokoj) {
 
 io.sockets.on('connection', function(socket) {
 
+    console.log(socket.handshake);
+
     socket.username = socket.handshake.user.username;
 
     //Wyświetlanie istniejących pokoi po podłączeniu:
