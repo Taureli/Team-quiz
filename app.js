@@ -206,13 +206,15 @@ var addPlayer = function (socket, data){
 	usersInRoom[socket.room]++;
 	//I wyświetlam wszystkim
 	io.sockets.emit('showRooms', rooms, usersInRoom);
+
+	var gracz = {"name":socket.username,"points":socket.points};
 	
 	//Dopisuję użytkownika do drużyny, gdzie jest mniej osób
 	if(blueTeam[socket.room].length > redTeam[socket.room].length){
-		redTeam[socket.room].push(socket.username);
+		redTeam[socket.room].push(gracz);
 		socket.team = "red";
 	} else {
-		blueTeam[socket.room].push(socket.username);
+		blueTeam[socket.room].push(gracz);
 		socket.team = "blue";
 	}
 
@@ -233,7 +235,7 @@ var addPlayer = function (socket, data){
 var removePlayer = function (team, room, name){
 	if(team == "blue"){
 		for(var i = 0; i < blueTeam[room].length; i++){
-			if(blueTeam[room][i] == name){
+			if(blueTeam[room][i].name == name){
 				temp1 = blueTeam[room].slice(0,i);
 				temp2 = blueTeam[room].slice(i + 1,blueTeam[room].length);
 				temp3 = temp1.concat(temp2);
@@ -242,7 +244,7 @@ var removePlayer = function (team, room, name){
 		}
 	} else {
 		for(var i = 0; i < redTeam[room].length; i++){
-			if(redTeam[room][i] == name){
+			if(redTeam[room][i].name == name){
 				temp1 = redTeam[room].slice(0,i);
 				temp2 = redTeam[room].slice(i + 1,redTeam[room].length);
 				temp3 = temp1.concat(temp2);
@@ -313,7 +315,22 @@ var addPoints = function (socket){
 
 	socket.points++;
 
-	//Zapisuję punkty użytkownikowi
+	//aktualizuję punkty w tablicy
+	if(socket.team == "blue"){
+		for(var i = 0; i < blueTeam[socket.room].length; i++){
+			if(blueTeam[socket.room][i].name === socket.username){
+				blueTeam[socket.room][i].points++;
+			}
+		}
+	} else {
+		for(var i = 0; i < redTeam[socket.room].length; i++){
+			if(redTeam[socket.room][i].name === socket.username){
+				redTeam[socket.room][i].points++;
+			}
+		}
+	}
+
+	//Zapisuję punkty użytkownikowi w bazie
 	socket.allPunkty++;
 	var statystyki = {"allPunkty":socket.allPunkty,"wygrane":socket.wygrane,"przegrane":socket.przegrane};
 	var statystyki2 = JSON.stringify(statystyki);
@@ -326,7 +343,10 @@ var addPoints = function (socket){
 	    }
 	});
 
+	//aktualizuje ogólną punktację
 	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
+	//i punktację graczy
+	io.sockets.in(socket.room).emit('joined left', blueTeam[socket.room], redTeam[socket.room], null);
 
 	//Sprawdzam czy któraś drużyna wygrała
 	if(redPoints[socket.room] === 20) {
@@ -349,7 +369,22 @@ var takePoints = function (socket){
 
 	socket.points--;
 
-	//Zapisuję punkty użytkownikowi
+	//aktualizuję punkty użytkownika w tablicy
+	if(socket.team == "blue"){
+		for(var i = 0; i < blueTeam[socket.room].length; i++){
+			if(blueTeam[socket.room][i].name === socket.username){
+				blueTeam[socket.room][i].points--;
+			}
+		}
+	} else {
+		for(var i = 0; i < redTeam[socket.room].length; i++){
+			if(redTeam[socket.room][i].name === socket.username){
+				redTeam[socket.room][i].points--;
+			}
+		}
+	}
+
+	//Zapisuję punkty użytkownikowi w bazie
 	socket.allPunkty--;
 	var statystyki = {"allPunkty":socket.allPunkty,"wygrane":socket.wygrane,"przegrane":socket.przegrane};
 	var statystyki2 = JSON.stringify(statystyki);
@@ -362,7 +397,10 @@ var takePoints = function (socket){
 	    }
 	});
 
+	//aktualizuje ogólną punktację
 	io.sockets.in(socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
+	//i punktację graczy
+	io.sockets.in(socket.room).emit('joined left', blueTeam[socket.room], redTeam[socket.room], null);
 
 };
 

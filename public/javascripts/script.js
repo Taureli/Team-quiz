@@ -139,7 +139,7 @@ $(function(){
 		});
 	});
 
-	//Wyświetla nazwę zalogowanego usera
+	//Wyświetla nazwę i statystyki zalogowanego usera
 	socket.on('show stats', function(user, gry, wygrane, przegrane){
 		$('#Username').html("Zalogowano jako: " + user);
 		$myStats.html("<b>Twoje statystyki:</b><br>");
@@ -153,21 +153,23 @@ $(function(){
         $chatLog.append(data + '<br/>');
     });
 	
-	//Po dołączeniu lub wyjściu z pokoju wypisuje userów do listy i daje informację w czacie
+	//Aktualizuje listę graczy w pokoju, dodaje informacje w czacie
+	//jeśli gracz dołączył lub wyszedł z gry
 	socket.on('joined left', function (blueTeam, redTeam, info) {
 	
 		$blueTeam.html("");
 		$redTeam.html("");
 	
 		$.each(blueTeam, function(i, el){
-			$blueTeam.prepend(el + '<br/>');
+			$blueTeam.prepend(el.name + ": " + el.points + '<br/>');
 		});
 		
 		$.each(redTeam, function(i, el){
-			$redTeam.prepend(el + '<br/>');
+			$redTeam.prepend(el.name + ": " + el.points + '<br/>');
 		});
 		
-        $chatLog.append(info + '<br/>');
+		if(info !== null)
+        	$chatLog.append(info + '<br/>');
     });
 
 	//Wyświetlenie pytania i odpowiedzi
