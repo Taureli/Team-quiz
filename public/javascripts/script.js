@@ -115,6 +115,9 @@ $(function(){
 	});
 
 	var nextQuestion = function (btn1, btn2){
+		//Przechodzę do następnego pytania
+		socket.emit('next question');
+
 		//aktywuję z powrotem przyciski
 		$a.removeAttr("disabled");
 		$b.removeAttr("disabled");
@@ -124,10 +127,7 @@ $(function(){
 		//zmieniam kolory na domyślne
 		$('#' + btn1).toggleClass( "btn-success btn-warning");
 		if(btn2 !== null)
-			$('#' + btn2).toggleClass( "btn-danger btn-warning");
-
-		//Przechodzę do następnego pytania
-		socket.emit('next question');
+			$('#' + btn2).toggleClass( "btn-danger btn-warning");	
 	};
 	
 	//Wypisywanie wszystkich dostępnych pokoi
@@ -205,7 +205,7 @@ $(function(){
 		$('#' + answer).toggleClass( "btn-warning btn-success");
 
 		//po 2 sekundach wywołuje funkcję
-		setTimeout(function(){ nextQuestion(answer, null) }, 2000);
+		setTimeout(function(){ nextQuestion(answer, null) }, 1000);
 	});
 
 	//Jeśli gracz udzielił złej odpowiedzi, zaznaczam dobrą odpowiedź

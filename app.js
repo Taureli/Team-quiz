@@ -85,7 +85,7 @@ passport.use(new LocalStrategy(
 
     	client.hget(username, "password", function(err, reply){
     		if(reply === md5(password)){
-    			console.log("Udane logowanie...");
+    			console.log("Zalogowano " + username);
 	            return done(null, {
 	                username: username,
 	                password: password

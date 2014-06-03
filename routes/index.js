@@ -48,8 +48,7 @@ router.post('/login',
 //REJESTRACJA
 router.post('/register', function (req, res){
 
-	//czy hasła się zgadzają
-	if(req.body.password === req.body.password2){
+	if(req.body.password.length > 5){
 
 		login = req.body.username;
 		req.body.password = md5(req.body.password);
@@ -62,22 +61,20 @@ router.post('/register', function (req, res){
 				client.hmset(login, "password", password, function(err, reply){
 			    	if(err){
 			    		console.log(err);
+			    		res.send("Wystąpił błąd: " + err);
 			    	} else {
 			    		console.log("Zarejestrowano użytkownika: " + login);
-			    		//logowanie po rejestracji:
-			    		passport.authenticate('local')(req, res, function(){
-			    			return res.redirect('/');
-			    		});
+			    		res.send("Zarejestrowano użytkownika: " + login);
 			    	}
 			    });
 
 			} else {
-				res.redirect('/login');
+				res.send("Nazwa użytkownika jest zajęta!");
 			}
 
 		});
 	} else {
-		res.redirect('/login');
+		res.send("Hasło musi składać się z min. 6 znaków!")
 	}
 
 });
