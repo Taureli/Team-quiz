@@ -524,7 +524,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('send msg', function (data) {
 		data = socket.username + ': ' + data;
 		console.log("SENT " + JSON.stringify(data));
-		io.sockets.in(socket.room).emit('rec msg', data);
+		io.sockets.in(socket.room).emit('rec msg', data, socket.team);
 	});
 	
 	socket.on('leave room', function (){

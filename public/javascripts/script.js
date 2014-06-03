@@ -149,8 +149,8 @@ $(function(){
 	});
 
 	//Aktualizacja chatu
-	socket.on('rec msg', function (data) {
-        $chatLog.append(data + '<br/>');
+	socket.on('rec msg', function (msg, team) {
+        $chatLog.append("<div id=" + team + ">" + msg + '</div>');
     });
 	
 	//Aktualizuje listę graczy w pokoju, dodaje informacje w czacie
