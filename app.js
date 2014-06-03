@@ -206,6 +206,7 @@ var addPlayer = function(socket, data) {
     //I wyświetlam wszystkim
     io.sockets.emit('showRooms', rooms, usersInRoom);
 
+    //obiekt gracza pezchowujący jego nazwę i punkty
     var gracz = {
         "name": socket.username,
         "points": socket.points
@@ -271,6 +272,7 @@ var randomInt = function(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
+//Do wyświetlania następnego pytania
 var nextQuestion = function(socket) {
 
     //Pobieram pytanie z bazy i wyświetlam pytanie
@@ -297,6 +299,7 @@ var nextQuestion = function(socket) {
         var ansc = allQuestions.questions[rand].c;
         var ansd = allQuestions.questions[rand].d;
 
+        //przechowuję poprawną odpowiedź w socketcie
         socket.correct = allQuestions.questions[rand].correct;
 
         console.log("PYTANIE %s", JSON.stringify(pytanie));
@@ -307,14 +310,17 @@ var nextQuestion = function(socket) {
 
 };
 
+//dodaje punkty po dobrej odpowiedzi
 var addPoints = function(socket) {
 
+    //dodaję punkt drużynie
     if (socket.team === "red") {
         redPoints[socket.room]++;
     } else {
         bluePoints[socket.room]++;
     }
 
+    //dodaję punkt graczowi
     socket.points++;
 
     //aktualizuję punkty w tablicy
@@ -365,14 +371,17 @@ var addPoints = function(socket) {
 
 };
 
+//odejmuje punkt po złej odpowiedzi
 var takePoints = function(socket) {
 
+    //odejmuje punkt drużynie
     if (socket.team === "red") {
         redPoints[socket.room]--;
     } else {
         bluePoints[socket.room]--;
     }
 
+    //odejmuje punkt graczowi
     socket.points--;
 
     //aktualizuję punkty użytkownika w tablicy
@@ -449,6 +458,7 @@ var stats = function(socket) {
             socket.emit('show stats', socket.username, socket.allPunkty, socket.wygrane, socket.przegrane);
 
         } else {
+            //przypisuję statystyki z bazy
             var statystyki3 = JSON.parse(reply);
             socket.allPunkty = statystyki3.allPunkty;
             socket.wygrane = statystyki3.wygrane;
@@ -460,6 +470,8 @@ var stats = function(socket) {
 
 };
 
+//jeśli jakaś drużyna wygrała
+//zwiększam statystykę wygrań gracza i wstawiam do bazy
 var wygrana = function(socket) {
     socket.wygrane++;
     var statystyki = {
@@ -478,6 +490,8 @@ var wygrana = function(socket) {
     });
 };
 
+//jeśli jakaś drużyna przegrała
+//zwiększam statystykę przegrań gracza i wstawiam do bazy
 var przegrana = function(socket) {
     socket.przegrane++;
     var statystyki = {
@@ -496,6 +510,8 @@ var przegrana = function(socket) {
     });
 };
 
+//sprawdzam czy w pokoju nie ma żadnych graczy
+//jeśli nie ma, to usuwam pokój
 var pustyPokoj = function(pokoj) {
     if (io.sockets.clients(pokoj).length < 1 && pokoj > 1) {
         for (var i = 2; i < rooms.length; i++) {
@@ -518,9 +534,9 @@ io.sockets.on('connection', function(socket) {
     socket.emit('showRooms', rooms, usersInRoom);
     stats(socket);
 
-
     socket.on('create room', function(data) {
-        usersInRoom.push(0);
+
+        usersInRoom.push(0); //ustawiam ilość użytkowników w nowym pokoju
         var temp = rooms.push(data); //temp przechowuje ilosc elementow w tablicy rooms
 
         //dane dla nowego pokoju
@@ -534,6 +550,7 @@ io.sockets.on('connection', function(socket) {
 
         //Dodaję gracza do nowego pokoju
         addPlayer(socket, temp - 1);
+
     });
 
     socket.on('join room', function(data) {
@@ -544,12 +561,16 @@ io.sockets.on('connection', function(socket) {
     });
 
     socket.on('send msg', function(data) {
+
+        //wysłanie wiadomości w czacie
         var data = socket.username + ': ' + data;
         console.log("SENT " + JSON.stringify(data));
         io.sockets. in (socket.room).emit('rec msg', data, socket.team);
+
     });
 
     socket.on('leave room', function() {
+
         var tempRoom = socket.room;
         var tempTeam = socket.team;
         socket.leave(tempRoom);
@@ -567,7 +588,9 @@ io.sockets.on('connection', function(socket) {
 
     });
 
-    //Sprawdzenie czy gracz udzielił dobrej odpowiedzi
+    //Sprawdzenie czy gracz udzielił dobrej odpowiedzi,
+    //jeśli tak, to dodaję punkt, jak nie to odejmuję
+    //i wyświetlam graczowi poprawną odpowiedź
     socket.on('check answer', function(data) {
 
         console.log("correct: " + socket.correct + " / pressed: " + data);
@@ -584,28 +607,38 @@ io.sockets.on('connection', function(socket) {
 
     //Przejście do następnego pytania
     socket.on('next question', function(data) {
+
         nextQuestion(socket);
+
     });
 
     //Koniec gry - uaktualnienie statystyk graczy i następna runda
     socket.on('next game', function(data) {
+
         nextQuestion(socket);
+
         if (socket.team === data)
             wygrana(socket);
         else if (socket.team !== "" || socket.team !== undefined)
             przegrana(socket);
+
     });
 
     socket.on('wygrana', function() {
+
         wygrana(socket);
+
     });
 
     socket.on('przegrana', function() {
+
         przegrana(socket);
+
     });
 
     //Rozłączenie socketa - wyjście z gry i drużyny, jeśli był w pokoju
     socket.on('disconnect', function() {
+
         if (socket.room !== undefined && socket.room !== "") {
             var tempRoom = socket.room;
             var tempTeam = socket.team;
@@ -619,6 +652,7 @@ io.sockets.on('connection', function(socket) {
             //sprawdzam czy to była jedyna osoba w pokoju
             pustyPokoj(tempRoom);
         }
+
     });
 
 

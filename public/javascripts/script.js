@@ -47,6 +47,7 @@ $(function() {
         e.preventDefault(); //deaktywacja "defaultowego" dzialania buttona
         var newRoomName = prompt("Podaj nazwę nowego pokoju:");
 
+        //nazwa pokoju nie może być pusta
         if (newRoomName !== null) {
             socket.emit('create room', newRoomName);
             $game.show();
@@ -56,6 +57,7 @@ $(function() {
 
     });
 
+    //wyjście z pokoju
     $wyjdz.click(function(e) {
 
         e.preventDefault(); //deaktywacja "defaultowego" dzialania buttona
@@ -66,6 +68,7 @@ $(function() {
 
     });
 
+    //wysłanie wiadomości w czacie
     $send.click(function(e) {
 
         e.preventDefault(); //deaktywacja "defaultowego" dzialania buttona
@@ -78,6 +81,7 @@ $(function() {
 
     });
 
+    //przyciski - odpowiedzi
     $a.click(function(e) {
         e.preventDefault();
 
@@ -114,6 +118,8 @@ $(function() {
 
     });
 
+    //Uruchomienie przycisków-odpowiedzi i przejście
+    //do następnego pytania
     var nextQuestion = function(btn1, btn2) {
         //Przechodzę do następnego pytania
         socket.emit('next question');
@@ -204,7 +210,7 @@ $(function() {
         //podświetlam przycisk na zielono
         $('#' + answer).toggleClass("btn-warning btn-success");
 
-        //po 2 sekundach wywołuje funkcję
+        //po 1 sekundzie wywołuje funkcję
         setTimeout(function() {
             nextQuestion(answer, null);
         }, 1000);
@@ -224,10 +230,10 @@ $(function() {
         //i odpowiedź gracza na czerwono
         $('#' + answer).toggleClass("btn-warning btn-danger");
 
-        //po 2 sekundach wywołuje funkcję
+        //po 1 sekundzie wywołuje funkcję
         setTimeout(function() {
             nextQuestion(corr, answer);
-        }, 2000);
+        }, 1000);
     });
 
 });
