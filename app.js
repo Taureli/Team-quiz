@@ -297,13 +297,13 @@ var nextQuestion = function(socket) {
         var allQuestions = JSON.parse(reply);
 
         //losowe pytanie
-        var rand = randomInt(0, allQuestions.questions.length);
+        var rand = randomInt(0, allQuestions.questions.length - 1);
 
         //Sprawdzam czy ostatnio nie wylosowano tego samego pytania
         //i ewentualnie powtarzam losowanie
         if (socket.lastq === rand) {
             while (socket.lastq === rand) {
-                rand = randomInt(0, allQuestions.questions.length);
+                rand = randomInt(0, allQuestions.questions.length - 1);
             }
         }
 
