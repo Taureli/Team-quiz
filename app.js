@@ -235,7 +235,7 @@ var addPlayer = function(socket, data) {
 };
 
 //Usuwa gracza z drużyny i informuje w pokoju, że user wyszedł
-var removePlayer = function(team, room, name) {
+var removePlayer = function(team, room, name, allP, wygr, przegr) {
     if (team == "blue") {
         for (var i = 0; i < blueTeam[room].length; i++) {
             if (blueTeam[room][i].name == name) {
@@ -255,6 +255,22 @@ var removePlayer = function(team, room, name) {
             }
         }
     }
+
+    //Aktualizuje statystyki gracza w bazie
+    var statystyki = {
+        "allPunkty": allP,
+        "wygrane": wygr,
+        "przegrane": przegr
+    };
+    var statystyki2 = JSON.stringify(statystyki);
+
+    client.hmset(name, "stats", statystyki2, function(err, reply2) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log("Zaktualizowano statystyki");
+        }
+    });
 
     //Zmniejszam ilość osób w pokoju
     usersInRoom[room]--;
@@ -285,9 +301,13 @@ var nextQuestion = function(socket) {
 
         //Sprawdzam czy ostatnio nie wylosowano tego samego pytania
         //i ewentualnie powtarzam losowanie
-        while (socket.lastq === rand) {
-            rand = randomInt(0, allQuestions.questions.length);
+        if (socket.lastq === rand) {
+            while (socket.lastq === rand) {
+                rand = randomInt(0, allQuestions.questions.length);
+            }
         }
+
+        console.log(rand + " / " + socket.lastq);
 
         //zapamiętuję ostatnie pytanie:
         socket.lastq = rand;
@@ -338,22 +358,9 @@ var addPoints = function(socket) {
         }
     }
 
-    //Zapisuję punkty użytkownikowi w bazie
+    //Zapisuję punkty użytkownikowi
     socket.allPunkty++;
-    var statystyki = {
-        "allPunkty": socket.allPunkty,
-        "wygrane": socket.wygrane,
-        "przegrane": socket.przegrane
-    };
-    var statystyki2 = JSON.stringify(statystyki);
-
-    client.hmset(socket.username, "stats", statystyki2, function(err, reply2) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log("Zaktualizowano statystyki");
-        }
-    });
+    
 
     //aktualizuje ogólną punktację
     io.sockets. in (socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
@@ -399,22 +406,8 @@ var takePoints = function(socket) {
         }
     }
 
-    //Zapisuję punkty użytkownikowi w bazie
+    //Zapisuję punkty użytkownikowi
     socket.allPunkty--;
-    var statystyki = {
-        "allPunkty": socket.allPunkty,
-        "wygrane": socket.wygrane,
-        "przegrane": socket.przegrane
-    };
-    var statystyki2 = JSON.stringify(statystyki);
-
-    client.hmset(socket.username, "stats", statystyki2, function(err, reply2) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log("Zaktualizowano statystyki");
-        }
-    });
 
     //aktualizuje ogólną punktację
     io.sockets. in (socket.room).emit('punkty', redPoints[socket.room], bluePoints[socket.room]);
@@ -528,7 +521,7 @@ var pustyPokoj = function(pokoj) {
 
 io.sockets.on('connection', function(socket) {
 
-    console.log(socket.handshake);
+    //console.log(socket.handshake);
 
     socket.username = socket.handshake.user.username;
 
@@ -580,7 +573,7 @@ io.sockets.on('connection', function(socket) {
         socket.team = "";
 
         //usuwam użytkownika z zespołu i pokoju:
-        removePlayer(tempTeam, tempRoom, socket.username);
+        removePlayer(tempTeam, tempRoom, socket.username, socket.allPunkty, socket.wygrane, socket.przegrane);
 
         //pokazuje aktualne statystyki
         stats(socket);
@@ -649,7 +642,7 @@ io.sockets.on('connection', function(socket) {
             socket.team = "";
 
             //usuwam użytkownika z zespołu i pokoju:
-            removePlayer(tempTeam, tempRoom, socket.username);
+            removePlayer(tempTeam, tempRoom, socket.username, socket.allPunkty, socket.wygrane, socket.przegrane);
 
             //sprawdzam czy to była jedyna osoba w pokoju
             pustyPokoj(tempRoom);
