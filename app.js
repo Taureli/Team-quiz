@@ -382,9 +382,9 @@ var addPoints = function(socket) {
 var takePoints = function(socket) {
 
     //odejmuje punkt drużynie
-    if (socket.team === "red") {
+    if (socket.team === "red" && redPoints[socket.room] > -5) {
         redPoints[socket.room]--;
-    } else {
+    } else if(socket.team === "blue" && bluePoints[socket.room] > -5) {
         bluePoints[socket.room]--;
     }
 
