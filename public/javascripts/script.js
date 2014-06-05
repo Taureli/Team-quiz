@@ -131,9 +131,9 @@ $(function() {
         $d.removeAttr("disabled");
 
         //zmieniam kolory na domyślne
-        $('#' + btn1).toggleClass("btn-success btn-warning");
+        $('#' + btn1).removeClass("btn-success");
         if (btn2 !== null)
-            $('#' + btn2).toggleClass("btn-danger btn-warning");
+            $('#' + btn2).removeClass("btn-danger");
     };
 
     //Wypisywanie wszystkich dostępnych pokoi
@@ -210,7 +210,7 @@ $(function() {
         $d.attr("disabled", "disabled");
 
         //podświetlam przycisk na zielono
-        $('#' + answer).toggleClass("btn-warning btn-success");
+        $('#' + answer).addClass("btn-success");
 
         //po 1 sekundzie wywołuje funkcję
         setTimeout(function() {
@@ -228,9 +228,9 @@ $(function() {
         $d.attr("disabled", "disabled");
 
         //podświetlam przycisk dobrej odpowiedzi na zielono
-        $('#' + corr).toggleClass("btn-warning btn-success");
+        $('#' + corr).addClass("btn-success");
         //i odpowiedź gracza na czerwono
-        $('#' + answer).toggleClass("btn-warning btn-danger");
+        $('#' + answer).addClass("btn-danger");
 
         //po 1 sekundzie wywołuje funkcję
         setTimeout(function() {

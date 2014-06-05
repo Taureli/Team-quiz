@@ -2,14 +2,15 @@
 <html>
 	<head>
 		<title>Drużynowy quiz</title>
-		<link rel='stylesheet' href ='/stylesheets/style.css' />
 		<link rel='stylesheet' href ='bootstrap.css' />
+		<link rel='stylesheet' href ='/stylesheets/style.css' />
 		<script type='text/javascript' src='/socket.io/socket.io.js'></script>
 		<script type='text/javascript' src='jquery.min.js'></script>
 		<script type='text/javascript' src='bootstrap.js'></script>
 	</head>
 	
 	<body>
+		<div class="wrapper">
 		<!--      POKOJE-(WYBÓR-I-TWORZENIE)     -->
 		<div id="rooms">
 		
@@ -61,20 +62,22 @@
 				</span>
 			</div>
 			
-			<div class="col-md-12">
+			<div id="game2" class="col-md-12">
 				<div id="blueTeam" class="col-md-3">
 				</div>
 				
 				<div class="col-md-6">
 					<div id="quiz">
-						<div id="question" class="well well-sm">Pytanie testowe</div>
-						<button id="a" value="" class="btn btn-warning btn-lg ansbtn"></button>
-						<button id="b" value="" class="btn btn-warning btn-lg ansbtn"></button>
-						<button id="c" value="" class="btn btn-warning btn-lg ansbtn"></button>
-						<button id="d" value="" class="btn btn-warning btn-lg ansbtn"></button>
+						<div id="question">Pytanie testowe</div>
+						<div id="buttonsPositionHelper">
+						<button id="a" value="" class="myButton"></button>
+						<button id="b" value="" class="myButton"></button>
+						<button id="c" value="" class="myButton"></button>
+						<button id="d" value="" class="myButton"></button>
+					</div>
 					</div>
 					
-					<div id="chatLog" class="well well-sm">
+					<div id="chatLog">
 					</div>
 					
 					<br/>
@@ -90,9 +93,9 @@
 			</div>
 			
 		</div>
-		<!-- My main script: -->
-		<script type='text/javascript' src='/javascripts/script.js'></script>
 	
+	</div>
 	</body>
-
+	<!-- My main script: -->
+		<script type='text/javascript' src='/javascripts/script.js'></script>
 </html>

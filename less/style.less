@@ -1,6 +1,11 @@
+@blueTeam:#51A7EE;
+@redTeam:#F43E3E;
+@baseText:#EBE8D7;
+@baseButton:#EDCB83;
 body {
     padding: 50px;
     font: 14px"Lucida Grande", Helvetica, Arial, sans-serif;
+    background-image: url("/images/giftly.png");
 }
 a {
     color: #00B7FF;
@@ -24,30 +29,64 @@ a {
 }
 #game {
     min-width: 1070px;
+    margin:0 auto;
+    max-width: 1070px;
+    max-height: 600px;
+}
+#game2 {
+    margin-left: 5%;
 }
 #points {
     font-size: 50px;
     margin-bottom: 10px;
 }
 #bluePoints {
-    color: blue;
+    color: @blueTeam;
 }
 #redPoints {
-    color: red;
+    color: @redTeam;
+}
+//nadpisanie bootstrapa
+.col-md-12 {
+    width: 1024px;
+}
+#buttonsPositionHelper {
+    margin:0 auto;
+    width:525px;
+}
+.myButton {
+    background-color: fade(darken(@baseButton, 8%), 20%);
+    border-radius: 10px;
+    width:250px;
+    height:75px;
+    text-align: center;
+    border:1px solid darken(@baseButton, 10%);
+    font-size: 16px;
+    color:darken(@baseText, 55%);
+    padding: 5px;
+    margin:5px;
+}
+.myButton:hover {
+    background-color: lighten(@baseButton, 5%);
+}
+.TeamBaseClass {
+    font-size: 18px;
+    height: 400px;
+    width: 20%;
+    color:lighten(@baseText, 40%);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
 }
 #blueTeam {
-    height: 400px;
-    width: 20%;
-    margin-right: 5%;
-    padding: 15px;
-    background-color: rgba(0, 0, 255, 0.6);
+    .TeamBaseClass;
+    background-color: fade(lighten(@blueTeam, 10%), 50%);
 }
 #redTeam {
-    height: 400px;
-    width: 20%;
+    .TeamBaseClass;
     margin-left: 5%;
-    padding: 15px;
-    background-color: rgba(255, 0, 0, 0.6);
+    background-color: @redTeam;
+    background-color: fade(lighten(@redTeam, 10%), 50%);
 }
 #quiz {
     height: 300px;
@@ -58,16 +97,19 @@ a {
     width: 100%;
     padding: 20px;
     font-size: 20px;
+    background-color: transparent;
+    border:none;
+    text-align: center;
 }
 #chatLog {
     height: 90px;
-    width: 100%;
+    width: 520px;
     margin-top: 5px;
-    background-color: rgba(255, 255, 0, 0.4);
+    background-color: fade(darken(@baseText, 15%), 18%);
     overflow-y: scroll;
 }
 #message {
-    width: 470px;
+    width: 350px;
 }
 #wszystko {
     width: 50%;
