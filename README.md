@@ -3,6 +3,7 @@
 ######Disclaimer: Whole application and all the questions are in Polish language
 
 Web application written in JavaScript using mostly node.js and socket.io with Redis database.
+
 After registering/logging in user can review his statistics, create a new room or join an existing one.
 When joing a game player is automatically assigned to one of the two teams - red or blue.
 Each player is given a random question. If he answers correctly he and his team gain a point, if the answer was wrong, one point is taken away.
